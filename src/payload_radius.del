@@ -1,0 +1,33 @@
+globalvar define payloadPosition;
+globalvar define payloadRingID;
+rule: 'Payload Position'
+{
+    MinWait();
+    payloadPosition = UpdateEveryFrame(PayloadPosition());
+    Loop();
+}
+
+rule: 'Payload Ring'
+if ((CurrentGameMode() == GameMode.Hybrid && ObjectiveIndex() > 0) || CurrentGameMode() == GameMode.Escort)
+if (!IsInSetup() == true)
+{
+    CreateEffect(AllPlayers(Team.All), Effect.Ring, CustomColor(255, 255, 255, 63.75), payloadPosition + Up(), 7.5, EffectRev.VisibleToPositionRadiusAndColor);
+    payloadRingID[0] = LastCreatedEntity();
+    CreateEffect(AllPlayers(Team.All), Effect.Ring, CustomColor(255, 255, 255, 63.75), payloadPosition + Down(), 7.5, EffectRev.VisibleToPositionRadiusAndColor);
+    payloadRingID[1] = LastCreatedEntity();
+    WaitUntil(IsInSetup() == true, 999999);
+    DestroyEffect(payloadRingID[0]);
+    DestroyEffect(payloadRingID[1]);
+}
+
+rule: 'Defending Bosses Heal on Payload'
+Event.OngoingPlayer
+Team.Team2
+if ((CurrentGameMode() == GameMode.Hybrid && ObjectiveIndex() > 0) || CurrentGameMode() == GameMode.Escort)
+if (IsOnObjective(EventPlayer()))
+if (IsTeamOnDefense(Team.Team2))
+{
+    StartHealOverTime(EventPlayer(), null, 1, 10);
+    Wait(1);
+    LoopIfConditionIsTrue();
+}

@@ -1,0 +1,24 @@
+rule: 'Hero Blacklist Team 1'
+Event.OngoingPlayer
+Team.Team1
+if (ArrayContains(AllowedHeroes()) != HeroOf(EventPlayer()))
+{
+    while (ArrayContains(AllDamageHeroes()) == HeroOf(EventPlayer()))
+    {
+        MinWait();
+        ForcePlayerHero(RandomValueInArray(AllDamageHeroes()));
+        StopForcingHero(EventPlayer());
+    }
+    while (ArrayContains(AllSupportHeroes()) == HeroOf(EventPlayer()))
+    {
+        MinWait();
+        ForcePlayerHero(RandomValueInArray(AllSupportHeroes()));
+        StopForcingHero(EventPlayer());
+    }
+   while (ArrayContains(AllTankHeroes()) == HeroOf(EventPlayer()))
+    {
+        MinWait();
+        ForcePlayerHero(RandomValueInArray([AllDamageHeroes(), AllSupportHeroes()]));
+        StopForcingHero(EventPlayer());
+    }
+}

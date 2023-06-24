@@ -1,2 +1,14 @@
+String CLOSE_INFO_STRING: "Press Crouch + Melee to toggle Boss Info menu.";
+String DVA_STATS: "D.Va Boss Stats";
+String DVA_ABILITIES: "D.Va Boss Abilities";
+String DOOMFIST_STATS: "Doomfist Boss Stats";
+String DOOMFIST_ABILITIES: "Doomfist Boss Abilities";
+String ORISA_STATS: "Orisa Boss Stats";
+String ORISA_ABILITIES: "Orisa Boss Abilities";
+String KIRIKO_STATS: "Kiriko Boss Stats";
+String KIRIKO_ABILITIES: "Kiriko Boss Abilities";
 String REINHARDT_STATS: "Reinhardt Boss Stats";
 String REINHARDT_ABILITIES: "Reinhardt Boss Abilities";
+String SIGMA_STATS: "Sigma Boss Stats";
+String SIGMA_ABILITIES: "Sigma Boss Abilities";
+String VERSION: "v1.0";

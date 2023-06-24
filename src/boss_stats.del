@@ -1,6 +1,10 @@
 import "strings.del";
 
 struct BossStats {
+    public String bossInfo;
+    public Number bossInfoStringID;
+    public Boolean bossInfoToggle;
+    public Hero currentBoss;
     public Number damageDealt;
     public Number damageReceived;
     public Number healingDealt;
@@ -10,14 +14,23 @@ struct BossStats {
     public Number gravity;
     public Number moveSpeed;
     public Number projectileSpeed;
+    public Number scale;
+    public Number voiceScale;
     public Number secondaryCooldown;
     public Number ability1Cooldown;  
     public Number ability2Cooldown;
     public Number jumpAbilityCooldown;
     public Number crouchAbilityCooldown;
+    public Number hackedTimer;
+    public Boolean stunned;
+    public Vector raycastEnd;
 }
 
 playervar BossStats bossStats = {
+    bossInfo: "Enter Information on Boss here.",
+    bossInfoStringID: 0,
+    bossInfoToggle: true,
+    currentBoss: null,
     damageDealt: 0,
     damageReceived: 0,
     healingDealt: 0,
@@ -27,12 +40,24 @@ playervar BossStats bossStats = {
     gravity: 0,
     moveSpeed: 0,
     projectileSpeed: 0,
+    scale: 0,
+    voiceScale: 0,
     secondaryCooldown: 0,
     ability1Cooldown: 0,
     ability2Cooldown: 0,
     jumpAbilityCooldown: 0,
-    crouchAbilityCooldown: 0
+    crouchAbilityCooldown: 0,
+    hackedTimer: 0,
+    stunned: 0,
+    raycastEnd: Vector(0, 0, 0),
 };
+
+globalvar define botNames;
+globalvar define botNamesCurrent;
+playervar define playerSlot;
+playervar define height;
+playervar define index;
+playervar define bossUltimateGlow;
 
 # Subroutine "Apply Boss Stats"
 void ApplyBossStats() "Apply Boss Stats" {
@@ -45,10 +70,210 @@ void ApplyBossStats() "Apply Boss Stats" {
     SetGravity(EventPlayer(), bossStats.gravity);
     SetMoveSpeed(EventPlayer(), bossStats.moveSpeed);
     SetProjectileSpeed(EventPlayer(), bossStats.projectileSpeed);
-    SetAbilityCooldown(EventPlayer(), Button.SecondaryFire, bossStats.secondaryCooldown);
-    SetAbilityCooldown(EventPlayer(), Button.Ability1, bossStats.ability1Cooldown);
-    SetAbilityCooldown(EventPlayer(), Button.Ability2, bossStats.ability2Cooldown);
-    SetAbilityCooldown(EventPlayer(), Button.Jump, bossStats.jumpAbilityCooldown);
-    SetAbilityCooldown(EventPlayer(), Button.Crouch, bossStats.crouchAbilityCooldown);
+    StartScalingPlayer(EventPlayer(), bossStats.scale);
+    StartModifyingHeroVoiceLines(EventPlayer(), bossStats.voiceScale, true);
+    botNames = ["Franky", "Frankly", "Stanky", "Manky", "Hanky", "Planky", "Panky", "Cranky", "Tanky", "Flanky", "Janky", "Yanky", "Ranky", "Wanky ( ͡° ͜ʖ ͡°)", "Kanky", "Clanky", "Lanky", "Sankey", "Banky", "Blanky", "Thomas"];
 }
 
+rule: 'Hacked Timer'
+Event.OngoingPlayer
+Team.Team2
+Player.All
+if (HasStatus(EventPlayer(), Status.Hacked))
+{
+    #Used to count how long player has been hacked for.
+    Wait(0.25);
+    bossStats.hackedTimer += 0.25;
+    LoopIfConditionIsTrue();
+    bossStats.hackedTimer = 0;
+}
+
+rule: 'Stunned'
+Event.OngoingPlayer
+Team.Team2
+Player.All
+if (!IsAlive(EventPlayer()) || (HasStatus(EventPlayer(), Status.Hacked) && (bossStats.hackedTimer <= 1.5)) || HasStatus(EventPlayer(), Status.Asleep) || HasStatus(EventPlayer(), Status.Frozen) || HasStatus(EventPlayer(), Status.KnockedDown) || HasStatus(EventPlayer(), Status.Stunned))
+{
+    bossStats.stunned = true;
+    Wait(0.001, WaitBehavior.IgnoreCondition);
+    LoopIfConditionIsTrue();
+    bossStats.stunned = false;
+}
+
+rule: 'Get Height'
+Event.OngoingPlayer
+if (IsAlive(EventPlayer()))
+{
+    MinWait();
+    height = (DistanceBetween(Vector(0, YOf(EyePosition(EventPlayer())), 0), Vector(0, YOf(PositionOf(EventPlayer())), 0)));
+    Loop();
+}
+
+rule: 'Raycast From Players'
+Event.OngoingPlayer
+Team.All
+Player.All
+if (1 == 1)
+{
+    MinWait();
+    bossStats.raycastEnd = (UpdateEveryFrame(EyePosition(EventPlayer()) + FacingDirectionOf(EventPlayer()) * 1000));    
+    Loop();
+}
+
+disabled rule: 'Boss Info Hero Swap'
+Event.OngoingPlayer
+Team.Team2
+Player.Slot0
+if (HeroOf(EventPlayer()) != bossStats.currentBoss)
+if (bossStats.currentBoss != null)
+{
+    DestroyAllHudText();
+    AllPlayers(Team.All).bossStats.bossInfoToggle = false;
+    AllPlayers(Team.All).bossStats.bossInfoToggle = true;
+    CreateHudText(EventPlayer(), HeroIconString(HeroOf(PlayersInSlot(0, Team.Team2))), PlayersInSlot(0, Team.Team2).bossStats.bossInfo, CLOSE_INFO_STRING, Location.Left, 0, Color.White, Color.White, Color.White, HudTextRev.SortOrderAndString, Spectators.DefaultVisibility);
+    bossStats.bossInfoStringID = LastTextID();
+    bossStats.currentBoss = HeroOf(EventPlayer());
+}
+
+disabled rule: 'Boss Info String Create'
+Event.OngoingPlayer
+Team.All
+Player.All
+if (bossStats.bossInfoToggle == true)
+{
+    CreateHudText(EventPlayer(), HeroIconString(HeroOf(PlayersInSlot(0, Team.Team2))), PlayersInSlot(0, Team.Team2).bossStats.bossInfo, CLOSE_INFO_STRING, Location.Left, 0, Color.White, Color.White, Color.White, HudTextRev.SortOrderAndString, Spectators.DefaultVisibility);
+    bossStats.bossInfoStringID = LastTextID();
+}
+
+disabled rule: 'Boss Info String Delete'
+Event.OngoingPlayer
+Team.All
+Player.All
+if (bossStats.bossInfoToggle == false)
+{
+    DestroyHudText(bossStats.bossInfoStringID);
+    bossStats.bossInfoStringID = 0;
+}
+
+
+disabled rule: 'Boss Info Team Swap'
+Event.OngoingPlayer
+Team.All
+Player.All
+if (PlayersInSlot(0, Team.Team2).bossStats.currentBoss == null || NumberOfPlayers(Team.Team2) <= 0)
+{
+    AllPlayers(Team.All).bossStats.bossInfoToggle = false;
+    AllPlayers(Team.All).bossStats.currentBoss = null;
+    DestroyAllHudText();
+}
+
+disabled rule: 'Manual Toggle Boss Info String'
+Event.OngoingPlayer
+Team.All
+Player.All
+if (IsButtonHeld(EventPlayer(), Button.Crouch))
+if (IsButtonHeld(EventPlayer(), Button.Melee))
+{
+    if (bossStats.bossInfoToggle == true)
+    {
+        bossStats.bossInfoToggle = false;
+        WaitUntil(!IsButtonHeld(EventPlayer(), Button.Melee), 99999);
+        Abort();
+    }
+    else
+    {
+        bossStats.bossInfoToggle = true;
+        WaitUntil(!IsButtonHeld(EventPlayer(), Button.Melee), 99999);
+    }
+}
+
+rule: 'Boss Objective Contest'
+Event.OngoingPlayer
+Team.Team2
+Player.Slot0
+if (IsOnObjective(EventPlayer()))
+if (IsAlive(EventPlayer()))
+{
+    if (IsOnObjective(EventPlayer()))
+    {
+        CreateDummyBot(HeroOf(EventPlayer()), Team.Team2, 4, WorldVectorOf(Vector(0, 0, -0.5), EventPlayer(), LocalVector.RotationAndTranslation), FacingDirectionOf(EventPlayer()));
+        CreateDummyBot(HeroOf(EventPlayer()), Team.Team2, 5, WorldVectorOf(Vector(0, 0, -0.5), EventPlayer(), LocalVector.RotationAndTranslation), FacingDirectionOf(EventPlayer()));
+        StartForcingPlayerPosition(PlayersInSlot(4, Team.Team2), WorldVectorOf(Vector(0, 0, -0.5), EventPlayer(), LocalVector.RotationAndTranslation), true);
+        StartForcingPlayerPosition(PlayersInSlot(5, Team.Team2), WorldVectorOf(Vector(0, 0, -0.5), EventPlayer(), LocalVector.RotationAndTranslation), true);
+        StartModifyingHeroVoiceLines(PlayersInSlot(4, Team.Team2), bossStats.voiceScale, true);
+        StartModifyingHeroVoiceLines(PlayersInSlot(5, Team.Team2), bossStats.voiceScale, true);
+        StartFacing(PlayersInSlot(5, Team.Team2), FacingDirectionOf(EventPlayer()), 9999, Relative.ToWorld, FacingRev.DirectionAndTurnRate);
+        StartFacing(PlayersInSlot(4, Team.Team2), FacingDirectionOf(EventPlayer()), 9999, Relative.ToWorld, FacingRev.DirectionAndTurnRate);
+        botNamesCurrent[0] = RandomValueInArray(botNames);
+        botNamesCurrent[1] = RandomValueInArray(RemoveFromArray(botNames, botNamesCurrent[0]));
+        while (IsOnObjective(EventPlayer()))
+        {
+            MinWait();
+            StartForcingDummyBotName(PlayersInSlot(4, Team.Team2), (botNamesCurrent[0]));
+            StartForcingDummyBotName(PlayersInSlot(5, Team.Team2), botNamesCurrent[1]);
+            SetStatus(PlayersInSlot(4, Team.Team2), null, Status.Invincible, 9999);
+            SetStatus(PlayersInSlot(5, Team.Team2), null, Status.Invincible, 9999);
+            SetStatus(PlayersInSlot(4, Team.Team2), null, Status.PhasedOut, 9999);
+            SetStatus(PlayersInSlot(5, Team.Team2), null, Status.PhasedOut, 9999);
+            SetGravity(PlayersInSlot(4, Team.Team2), 0);
+            SetGravity(PlayersInSlot(5, Team.Team2), 0);
+            SetInvisible(PlayersInSlot(4, Team.Team2), InvisibleTo.All);
+            SetInvisible(PlayersInSlot(5, Team.Team2), InvisibleTo.All);
+        }
+        DestroyDummyBot(Team.Team2, 4);
+        DestroyDummyBot(Team.Team2, 5);
+    }
+}
+
+rule: 'Fast Spawn for Boss'
+Event.OngoingPlayer
+Team.Team2
+Player.Slot0
+if (IsDead(EventPlayer()))
+{
+    SetRespawnMaxTime(EventPlayer(), 7.5);
+}
+
+rule: 'Slot Stat'
+Event.OngoingPlayer
+{
+    playerSlot = SlotOf(EventPlayer());
+}
+
+rule: 'Boss Info'
+Event.OngoingGlobal
+{
+    CreateHudText(FilteredArray(AllPlayers(Team.All), ArrayElement().bossStats.bossInfoToggle), <"<0>", HeroIconString(HeroOf(PlayersInSlot(0, Team.Team2)))>, PlayersInSlot(0, Team.Team2).bossStats.bossInfo[0], PlayersInSlot(0, Team.Team2).bossStats.bossInfo[1], Location.Left, 0, Color.White, Color.White, Color.White, HudTextRev.VisibleToAndString, Spectators.VisibleAlways);
+    CreateHudText(FilteredArray(AllPlayers(Team.All), ArrayElement().bossStats.bossInfoToggle), null, null, CLOSE_INFO_STRING, Location.Right, 1, Color.White, Color.White, Color.White, HudTextRev.VisibleToAndString, Spectators.VisibleAlways);
+}
+
+rule: 'Boss Info Toggle'
+Event.OngoingPlayer
+Team.Team2
+Player.All
+if (IsButtonHeld(EventPlayer(), Button.Crouch) && IsButtonHeld(EventPlayer(), Button.Melee))
+{
+    if (bossStats.bossInfoToggle)
+    {
+        bossStats.bossInfoToggle = false;
+    }
+    else
+    {
+        bossStats.bossInfoToggle = true;
+    }
+}
+
+rule: 'Boss Ultimate Glow'
+Event.OngoingPlayer
+Team.Team2
+Player.Slot0
+if (UltimateChargePercent() >= 100)
+{
+    CreateEffect(RemoveFromArray(AllPlayers(Team.All), EventPlayer()), Effect.WinstonPrimalRageEffect, Color.Team2, EventPlayer(), 1, EffectRev.PositionAndRadius);
+    bossUltimateGlow[0] = LastCreatedEntity();
+    CreateEffect(RemoveFromArray(AllPlayers(Team.All), EventPlayer()), Effect.ReaperWraithFormEffect, Color.Team2, EventPlayer(), 1, EffectRev.PositionAndRadius);
+    bossUltimateGlow[1] = LastCreatedEntity();
+    WaitUntil(UltimateChargePercent() < 100, 999999);
+    DestroyEffect(bossUltimateGlow[0]);
+    DestroyEffect(bossUltimateGlow[1]);
+}

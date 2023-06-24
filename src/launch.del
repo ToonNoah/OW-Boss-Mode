@@ -1,0 +1,12 @@
+playervar define sigmaData_kineticGraspVictims;
+playervar define sigmaData_kineticGraspCurrentVictim;
+
+rule: "Rule 89"
+Event.OngoingPlayer
+{
+    for (sigmaData_kineticGraspVictims = 0; CountOf(FilteredArray(AllLivingPlayers(OppositeTeamOf(TeamOf(EventPlayer()))), PlayersWithinRadius(PositionOf(), 10, OppositeTeamOf(TeamOf(EventPlayer())), RadiusLOS.Off) == true)); 1)
+    {
+        sigmaData_kineticGraspCurrentVictim = SortedArray(FilteredArray(AllLivingPlayers(OppositeTeamOf(TeamOf(EventPlayer()))), PlayersWithinRadius(PositionOf(), 10, OppositeTeamOf(TeamOf(EventPlayer())), RadiusLOS.Off) == true), SlotOf(ArrayElement()))[sigmaData_kineticGraspVictims];
+        ApplyImpulse(sigmaData_kineticGraspCurrentVictim, DirectionTowards(PositionOf(EventPlayer()), PositionOf(sigmaData_kineticGraspCurrentVictim)), 25, Relative.ToWorld, ContraryMotion.Cancel);
+    }
+}

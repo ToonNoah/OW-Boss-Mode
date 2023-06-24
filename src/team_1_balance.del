@@ -1,0 +1,39 @@
+globalvar define team1ZenDiscordOrbEnabled;
+globalvar define team1ZenDamageBoost;
+playervar define team1ZenDamageBoostEffectID;
+
+rule: '1st Team Balance Settings'
+{
+    team1ZenDiscordOrbEnabled = WorkshopSettingToggle(
+        "1st Team Balance",
+        "Zenyatta Discord Orb Enabled",
+        false,
+        1
+    );
+    team1ZenDamageBoost = WorkshopSettingReal(
+        "1st Team Balance",
+        "Zenyatta Damage Boost",
+        25,
+        0,
+        500,
+        2
+    );
+}
+rule: 'Team 1 Zenyatta settings'
+Event.OngoingPlayer
+Team.Team1
+if (HeroOf() == Hero.Zenyatta)
+if (IsAlive())
+{
+    SetAbility2Enabled(EventPlayer(), team1ZenDiscordOrbEnabled);
+    SetDamageDealt(EventPlayer(), team1ZenDamageBoost + 100);
+    if (team1ZenDamageBoost > 0)
+    {
+        CreateEffect(AllPlayers(Team.All), Effect.MercyDamageBoostedEffect, Color.Team1, EventPlayer(), 1, EffectRev.PositionAndRadius);
+        team1ZenDamageBoostEffectID = LastCreatedEntity();
+    }
+    WaitUntil(HeroOf() != Hero.Zenyatta || IsDead(), 999999);
+    SetAbility2Enabled(EventPlayer(), true);
+    SetDamageDealt(EventPlayer(), 100);
+    DestroyEffect(team1ZenDamageBoostEffectID);
+}

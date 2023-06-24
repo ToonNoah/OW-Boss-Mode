@@ -1,0 +1,446 @@
+import "../boss_stats.del";
+
+struct KirikoData{
+    public Number kiriDummyBotID;
+    public Number kiriCloneEffectID;
+    public Number kiriCloneCooldown;
+    public Number kiriCloneTime;
+    public Number kiriCloneTextID;
+    public Number kiriCloneInputID;
+    public Vector kiriClonePrevPosition;
+    public Boolean kiriCloneHealMode;
+    public Number kiriCloneRange;
+    public Number kiriCloneOverhealth;
+    public Number kiriCloneOverhealthID;
+}
+
+playervar KirikoData kirikoData = {
+    kiriDummyBotID: 0,
+    kiriCloneEffectID: 0,
+    kiriCloneCooldown: 0,
+    kiriCloneTime: 0,
+    kiriCloneTextID: 0,
+    kiriCloneInputID: 0,
+    kiriClonePrevPosition: Vector(0, 0, 0),
+    kiriCloneHealMode: false,
+    kiriCloneRange: 0,
+    kiriCloneOverhealth: 0,
+    kiriCloneOverhealthID: 0
+};
+
+rule: "Kiriko Boss Settings"
+Event.OngoingPlayer
+Team.Team2
+Player.Slot0
+if (HeroOf(EventPlayer()) == Hero.Kiriko)
+if (HasSpawned(EventPlayer()))
+{
+    bossStats = {
+        bossInfo: null,
+        bossInfoStringID: 0,
+        bossInfoToggle: true,
+        currentBoss: HeroOf(EventPlayer()),
+        damageDealt: WorkshopSettingReal(
+            KIRIKO_STATS,
+            "Kiriko Damage Dealt",
+            170,
+            0,
+            500,
+            0,
+        ),
+        damageReceived: WorkshopSettingReal(
+            KIRIKO_STATS,
+            "Kiriko Damage Received",
+            100,
+            0,
+            500,
+            1,
+        ),
+        healingDealt: 100,
+        healingReceived: WorkshopSettingReal(
+            KIRIKO_STATS,
+            "Kiriko Healing Received",
+            170,
+            0,
+            500,
+            3,
+        ),
+        health: WorkshopSettingReal(
+            KIRIKO_STATS, 
+            "Kiriko Health", 
+            250, 
+            0.01, 
+            500, 
+            4,
+        ),
+        jumpSpeed: WorkshopSettingReal(
+            KIRIKO_STATS,
+            "Kiriko Jump Speed",
+            100,
+            0,
+            500,
+            5,
+        ),
+        gravity: WorkshopSettingReal(
+            KIRIKO_STATS,
+            "Kiriko Gravity",
+            100,
+            0,
+            500,
+            6,
+        ),
+        moveSpeed: WorkshopSettingReal(
+            KIRIKO_STATS,
+            "Kiriko Movement Speed",
+            150,
+            0,
+            500,
+            7,
+        ),
+        projectileSpeed: WorkshopSettingReal(
+            KIRIKO_STATS,
+            "Kiriko Projectile Speed",
+            100,
+            0,
+            500,
+            8,
+        ),
+        scale: WorkshopSettingReal(
+            KIRIKO_STATS,
+            "Kiriko Scale",
+            1.45,
+            0.001,
+            10,
+            9,
+        ),
+        voiceScale: WorkshopSettingReal(
+            KIRIKO_STATS,
+            "Kiriko Voice Scale",
+            0.75,
+            0.001,
+            2,
+            10,
+        ),               
+        secondaryCooldown: 0,
+        ability1Cooldown: WorkshopSettingInteger(
+            KIRIKO_ABILITIES,
+            "Kiriko Swift Step Cooldown",
+            7,
+            0,
+            500,
+            0
+        ),
+        ability2Cooldown: WorkshopSettingInteger(
+            KIRIKO_ABILITIES,
+            "Kiriko Protection Suzu Cooldown",
+            14,
+            0,
+            500,
+            4
+        ),
+        jumpAbilityCooldown: 0,
+        crouchAbilityCooldown: 0,
+        raycastEnd: Vector(0, 0, 0),
+        hackedTimer: 0,
+        stunned: false,
+    };
+    ApplyBossStats();
+    kirikoData = {
+        kiriCloneCooldown: WorkshopSettingInteger(
+            KIRIKO_ABILITIES,
+            "Kiriko Kiri-Clone Cooldown",
+            5,
+            0,
+            500,
+            1
+        ),
+        kiriCloneRange: WorkshopSettingInteger(
+            KIRIKO_ABILITIES,
+            "Kiriko Kiri-Clone Attack Range",
+            80,
+            0,
+            500,
+            2
+        ),
+        kiriCloneOverhealth: WorkshopSettingInteger(
+            KIRIKO_ABILITIES,
+            "Kiriko Kiri-Clone Extra Temporary Health",
+            200,
+            0,
+            500,
+            4
+        ),
+        kiriDummyBotID: 0,
+        kiriCloneEffectID: 0,
+        kiriCloneTextID: 0,
+        kiriCloneInputID: 0,
+        kiriCloneTime: 0,
+        kiriClonePrevPosition: Vector(0, 0, 0),
+        kiriCloneHealMode: false,
+        kiriCloneOverhealthID: 0,
+    };
+    bossStats.bossInfo[0] = "Boss can summon a clone that can attack. Boss can press SF while";
+    bossStats.bossInfo[1] = "looking at their clone to be healed back!";
+}
+
+rule: 'Kiri-Clone Ability'
+Event.OngoingPlayer
+Team.Team2
+Player.Slot0
+if (HeroOf(EventPlayer()) == Hero.Kiriko)
+if (IsButtonHeld(EventPlayer(), Button.Interact))
+if (kirikoData.kiriCloneTime <= 0)
+if (!bossStats.stunned == true)
+{
+    if (IsAlive(PlayersInSlot(1, Team.Team2)))
+    {
+        PlayEffect(AllPlayers(Team.All), PlayEffect.BadPickupEffect, Color.Team2, PositionOf(PlayersInSlot(1,Team.Team2)),1);
+        PlayEffect([PlayersInSlot(!0, Team.Team2), Team.Team1], PlayEffect.ExplosionSound, Color.Team2, PositionOf(PlayersInSlot(1, Team.Team2)), 30);
+        StopForcingDummyBotName(PlayersInSlot(1, Team.Team2));
+        StopScalingPlayer(PlayersInSlot(1, Team.Team2));
+        DestroyEffect(kirikoData.kiriCloneEffectID);
+        RemoveHealthPoolFromPlayer(kirikoData.kiriCloneOverhealthID);
+        DestroyDummyBot(Team.Team2, 1);
+    }
+    MinWait();
+    CreateDummyBot(Hero.Kiriko, TeamOf(EventPlayer()), 1, PositionOf(EventPlayer()), FacingDirectionOf(EventPlayer()));
+    PlayEffect(AllPlayers(Team.All), PlayEffect.BuffExplosionSound, Color.Team2, PositionOf(EventPlayer()), 20);
+    PlayEffect(AllPlayers(Team.All), PlayEffect.GoodPickupEffect, Color.Team2, PositionOf(EventPlayer()), 1);
+    MinWait();
+    StartScalingPlayer(PlayersInSlot(1, Team.Team2), bossStats.scale, true);
+    AddHealthPoolToPlayer(PlayersInSlot(1, Team.Team2), HealthType.Health, kirikoData.kiriCloneOverhealth, false, true) ;
+    kirikoData.kiriCloneOverhealthID = LastCreatedHealthPool();
+    StartForcingDummyBotName(PlayersInSlot(1, Team.Team2), "Kiri-Clone");
+    MinWait();
+    CreateEffect(AllPlayers(Team.All), Effect.EchoCloningEffect, Color.Team2, PlayersInSlot(1,Team.Team2), 1, EffectRev.VisibleToPositionAndRadius);
+    kirikoData.kiriCloneEffectID = LastCreatedEntity();
+    kirikoData.kiriCloneTime = (kirikoData.kiriCloneCooldown);
+}
+
+rule: 'Kiri-Clone Create Timer'
+Event.OngoingPlayer
+Team.Team2
+Player.Slot0
+if (HeroOf(EventPlayer()) == Hero.Kiriko)
+if (kirikoData.kiriCloneTextID == 0)
+{
+    CreateInWorldText(EventPlayer(), <"<0>", AbilityIconString(Hero.Echo, Button.Ultimate)>, UpdateEveryFrame(EyePosition(EventPlayer()) + 100 * (1.1 * WorldVectorOf(Right(), EventPlayer(), LocalVector.Rotation) + -1.6 * DirectionFromAngles(HorizontalAngleFromDirection(FacingDirectionOf(EventPlayer())), VerticalAngleFromDirection(FacingDirectionOf(EventPlayer())) - 90) + 3 * FacingDirectionOf(EventPlayer()))), 3, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndString, CustomColor(255, 255, 255, 255), Spectators.DefaultVisibility);
+    kirikoData.kiriCloneTextID = LastTextID();
+    DestroyInWorldText(kirikoData.kiriCloneInputID);
+    CreateInWorldText(EventPlayer(), <"<0>", InputBindingString(Button.Interact)>, UpdateEveryFrame(EyePosition(EventPlayer()) + 100 * (1.1 * WorldVectorOf(Right(), EventPlayer(), LocalVector.Rotation) + -1.83 * DirectionFromAngles(HorizontalAngleFromDirection(FacingDirectionOf(EventPlayer())), VerticalAngleFromDirection(FacingDirectionOf(EventPlayer())) - 90) + 3 * FacingDirectionOf(EventPlayer()))), 2, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndString, CustomColor(255, 255, 255, 255), Spectators.DefaultVisibility);
+    kirikoData.kiriCloneInputID = LastTextID();
+}
+
+rule: 'Kiri-Clone Timer Tick'
+Event.OngoingPlayer
+Team.Team2
+Player.Slot0
+if (HeroOf(EventPlayer()) == Hero.Kiriko)
+if (kirikoData.kiriCloneTime > 0)
+{
+    DestroyInWorldText(kirikoData.kiriCloneTextID);
+    CreateInWorldText(EventPlayer(), <"<0> <1>", AbilityIconString(Hero.Echo, Button.Ultimate), kirikoData.kiriCloneTime>, UpdateEveryFrame(EyePosition(EventPlayer()) + 100 * (1.05 * WorldVectorOf(Right(), EventPlayer(), LocalVector.Rotation) + -1.6 * DirectionFromAngles(HorizontalAngleFromDirection(FacingDirectionOf(EventPlayer())), VerticalAngleFromDirection(FacingDirectionOf(EventPlayer())) - 90) + 3 * FacingDirectionOf(EventPlayer()))), 3, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndString, CustomColor(255, 139, 36, 255), Spectators.DefaultVisibility);
+    kirikoData.kiriCloneTextID = LastTextID();
+    DestroyInWorldText(kirikoData.kiriCloneInputID);
+    CreateInWorldText(EventPlayer(), <"<0>", InputBindingString(Button.Interact)>, UpdateEveryFrame(EyePosition(EventPlayer()) + 100 * (1.1 * WorldVectorOf(Right(), EventPlayer(), LocalVector.Rotation) + -1.83 * DirectionFromAngles(HorizontalAngleFromDirection(FacingDirectionOf(EventPlayer())), VerticalAngleFromDirection(FacingDirectionOf(EventPlayer())) - 90) + 3 * FacingDirectionOf(EventPlayer()))), 2, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndString, CustomColor(255, 255, 255, 50), Spectators.DefaultVisibility);
+    kirikoData.kiriCloneInputID = LastTextID();
+    Wait(1, WaitBehavior.IgnoreCondition);
+    if (kirikoData.kiriCloneTime == 1)
+    {
+        DestroyInWorldText(kirikoData.kiriCloneTextID);
+        CreateInWorldText(EventPlayer(), <"<0>", AbilityIconString(Hero.Echo, Button.Ultimate)>, UpdateEveryFrame(EyePosition(EventPlayer()) + 100 * (1.1 * WorldVectorOf(Right(), EventPlayer(), LocalVector.Rotation) + -1.6 * DirectionFromAngles(HorizontalAngleFromDirection(FacingDirectionOf(EventPlayer())), VerticalAngleFromDirection(FacingDirectionOf(EventPlayer())) - 90) + 3 * FacingDirectionOf(EventPlayer()))), 3, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndString, CustomColor(255, 255, 255, 255), Spectators.DefaultVisibility);
+        kirikoData.kiriCloneTextID = LastTextID();
+        DestroyInWorldText(kirikoData.kiriCloneInputID);
+        CreateInWorldText(EventPlayer(), <"<0>", InputBindingString(Button.Interact)>, UpdateEveryFrame(EyePosition(EventPlayer()) + 100 * (1.1 * WorldVectorOf(Right(), EventPlayer(), LocalVector.Rotation) + -1.83 * DirectionFromAngles(HorizontalAngleFromDirection(FacingDirectionOf(EventPlayer())), VerticalAngleFromDirection(FacingDirectionOf(EventPlayer())) - 90) + 3 * FacingDirectionOf(EventPlayer()))), 2, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndString, CustomColor(255, 255, 255, 255), Spectators.DefaultVisibility);
+        kirikoData.kiriCloneInputID = LastTextID();
+        PlayEffect(EventPlayer(), PlayEffect.HanzoSonicArrowInitialPulseSound, Color.White, EventPlayer(), 200);
+        BigMessage(EventPlayer(), "Kiri-Clone is ready!");
+    }
+    kirikoData.kiriCloneTime -= 1;
+    LoopIfConditionIsTrue();
+}
+
+rule: 'Kiri-Clone Destroy Timer'
+Event.OngoingPlayer
+Team.Team2
+Player.Slot0
+if (HeroOf(EventPlayer()) != Hero.Kiriko)
+if (kirikoData.kiriCloneTextID != 0)
+{
+    DestroyInWorldText(kirikoData.kiriCloneTextID);
+    kirikoData.kiriCloneTextID = 0;
+    DestroyInWorldText(kirikoData.kiriCloneInputID);
+    kirikoData.kiriCloneInputID = 0;
+}
+
+rule: 'Kiri-Clone Swap'
+Event.OngoingPlayer
+Team.Team2
+Player.Slot0
+if (HeroOf(EventPlayer()) == Hero.Kiriko)
+if (IsUsingAbility1((EventPlayer())))
+{
+    kirikoData.kiriClonePrevPosition = PositionOf(EventPlayer());
+    WaitUntil(AbilityCooldown(EventPlayer(), Button.Ability1) > 0, 3);
+    Wait(0.1, WaitBehavior.IgnoreCondition);
+    SetFacing(PlayersInSlot(1, Team.Team2), FacingDirectionOf(EventPlayer()), Relative.ToWorld);
+    Teleport(PlayersInSlot(1, Team.Team2), kirikoData.kiriClonePrevPosition);
+    kirikoData.kiriCloneTime = kirikoData.kiriCloneCooldown;
+}
+
+rule: 'Kiri-Clone Stunned'
+Event.OngoingPlayer
+Team.Team2
+Player.Slot0
+if (PlayersInSlot(1, Team.Team2).bossStats.stunned == true)
+{
+    kirikoData.kiriCloneHealMode = false;
+    SetAbility1Enabled(EventPlayer(), false);
+    SetPrimaryFireEnabled(PlayersInSlot(1, Team.Team2), false);
+    SetSecondaryFireEnabled(PlayersInSlot(1, Team.Team2), false);
+    Wait(0.001, WaitBehavior.IgnoreCondition);
+    LoopIfConditionIsTrue();
+    SetAbility1Enabled(EventPlayer(), true);
+    SetPrimaryFireEnabled(PlayersInSlot(1, Team.Team2), true);
+    SetSecondaryFireEnabled(PlayersInSlot(1, Team.Team2), true);    
+}
+
+Player GetClosestLivingPlayerTo(Vector Center, Number Radius, Team Team, RadiusLOS LOSCheck, Player[] Ignore = []) {
+    Player[] playersWithinRange = PlayersWithinRadius(Center, Radius, Team, LOSCheck);
+    Player closestPlayer = null;
+    Number bestDistance = Radius + 1;
+    foreach (define player in playersWithinRange) {
+        if (Ignore.Contains(player)) continue;
+        if (!IsAlive(player)) continue;
+        if (HeroOf(player) == Hero.Sombra && IsUsingAbility1(player)) continue;
+        Number distance = DistanceBetween(Center, PositionOf(player));
+        if (distance < bestDistance) {
+            bestDistance = distance;
+            closestPlayer = player;
+        }
+    }
+    return closestPlayer;
+}
+
+rule: 'Kiri-Clone Attack'
+Event.OngoingPlayer
+Team.Team2
+Player.Slot1
+if (HeroOf(EventPlayer()) == Hero.Kiriko)
+if (IsDummyBot(EventPlayer()))
+if (PlayersWithinRadius(EyePosition(EventPlayer()), 40, Team.Team1, RadiusLOS.Surfaces).IsTrueForAny(player => IsAlive(player)))
+if (PlayersWithinRadius(EyePosition(EventPlayer()), 40, Team.Team1, RadiusLOS.Surfaces).IsTrueForAny(player => HeroOf(player) == Hero.Sombra ? !IsUsingAbility1(player) : true))
+if (!kirikoData.kiriCloneHealMode == true)
+if (!IsFiringPrimary(EventPlayer()) == true)
+if (!bossStats.stunned == true)
+if (!IsButtonHeld(PlayersInSlot(1, Team.Team2), Button.PrimaryFire))
+
+{
+    //StartFacing(EventPlayer(), DirectionTowards(EyePosition(EventPlayer()), EyePosition(GetClosestLivingPlayerTo(PositionOf(EventPlayer()), kirikoData.kiriCloneRange, Team.Team1, RadiusLOS.Surfaces))), 270, Relative.ToWorld, FacingRev.DirectionAndTurnRate);
+    StartFacing(EventPlayer(), DirectionTowards(EyePosition(EventPlayer()), EyePosition(GetClosestLivingPlayerTo(PositionOf(EventPlayer()), 40, Team.Team1, RadiusLOS.Surfaces))), 270, Relative.ToWorld, FacingRev.DirectionAndTurnRate);
+    StartHoldingButton(EventPlayer(), Button.SecondaryFire);
+    MinWait();
+    LoopIfConditionIsTrue();
+    StopFacing(EventPlayer());
+    StopHoldingButton(EventPlayer(), Button.SecondaryFire);
+    PressButton((EventPlayer()), Button.Reload);
+}
+
+rule: 'Kiri-Clone Heal'
+Event.OngoingPlayer
+Team.Team2
+Player.Slot0
+if (HeroOf(EventPlayer()) == Hero.Kiriko)
+if (PlayersInViewAngle(EventPlayer(), Team.Team2, 75) == PlayersInSlot(1, Team.Team2))
+if (IsFiringPrimary(EventPlayer()) == true)
+if (!PlayersInSlot(1, Team.Team2).bossStats.stunned == true)
+{
+    kirikoData.kiriCloneHealMode = true;
+    SetFacing(PlayersInSlot(1, Team.Team2), DirectionTowards(PlayersInSlot(1, Team.Team2), PositionOf(EventPlayer()) + Vector(0, 0.5, 0)), Relative.ToWorld);
+    Wait(0.1);
+    StartHoldingButton(PlayersInSlot(1, Team.Team2), Button.PrimaryFire);
+    StartFacing(PlayersInSlot(1, Team.Team2), DirectionTowards(PlayersInSlot(1, Team.Team2), PositionOf(EventPlayer()) + Vector(0, 0.5, 0)), 9999, Relative.ToWorld, FacingRev.DirectionAndTurnRate);
+    Wait(0.1);
+    WaitUntil(!IsFiringSecondary(PlayersInSlot(1, Team.Team2)), 999999);
+    WaitUntil(!IsReloading(PlayersInSlot(1, Team.Team2)), 999999);
+    WaitUntil(!IsFiringPrimary(PlayersInSlot(1, Team.Team2)), 999999);
+    StopHoldingButton(PlayersInSlot(1, Team.Team2), Button.PrimaryFire);
+    StopFacing(PlayersInSlot(1, Team.Team2));
+    kirikoData.kiriCloneHealMode = false;
+}
+
+rule: 'Kiri-Clone Clone Dead'
+Event.OngoingPlayer
+Team.Team2
+Player.Slot0
+if (HeroOf(EventPlayer()) == Hero.Kiriko)
+if (HeroOf(PlayersInSlot(1, Team.Team2)) == Hero.Kiriko)
+//if (IsTrueForAny(AllDeadPlayers(Team.Team2), true) || HeroOf(EventPlayer()) != Hero.Kiriko)
+{
+    WaitUntil(IsTrueForAny(AllDeadPlayers(Team.Team2), true) || HeroOf(EventPlayer()) != Hero.Kiriko, 999999);
+    kirikoData.kiriCloneTime = bossStats.ability1Cooldown;
+    PlayEffect(AllPlayers(Team.All), PlayEffect.BadPickupEffect, Color.Team2, PositionOf(PlayersInSlot(1, Team.Team2)));
+    PlayEffect(EventPlayer(), PlayEffect.ExplosionSound, Color.Team2, EventPlayer(), 200);
+    PlayEffect([PlayersInSlot(!0, Team.Team2), Team.Team1], PlayEffect.ExplosionSound, Color.Team2, PositionOf(PlayersInSlot(1, Team.Team2)), 30);
+    MinWait();
+    DestroyDummyBot(Team.Team2, 1);
+}
+
+rule: "Kiri-Clone Crouch Copycat"
+Event.OngoingPlayer
+Team.Team2
+Player.Slot0
+if (HeroOf(EventPlayer()) == Hero.Kiriko)
+if (IsCrouching(EventPlayer()) == true)
+if (PlayersInViewAngle(EventPlayer(), Team.Team2, 75) == PlayersInSlot(1, Team.Team2))
+if (!IsFiringSecondary(PlayersInSlot(1, Team.Team2)) == true)
+{
+    Wait(0.05, WaitBehavior.IgnoreCondition);
+    StartFacing(PlayersInSlot(1, Team.Team2), DirectionTowards(EyePosition(PlayersInSlot(1, Team.Team2)), EyePosition(EventPlayer())), 900, Relative.ToWorld, FacingRev.DirectionAndTurnRate);
+    StartHoldingButton(PlayersInSlot(1, Team.Team2), Button.Crouch);
+    LoopIfConditionIsTrue();
+    Wait(0.05, WaitBehavior.IgnoreCondition);
+    StopFacing(PlayersInSlot(1, Team.Team2));
+    StopHoldingButton(PlayersInSlot(1, Team.Team2), Button.Crouch);
+}
+
+rule: 'Kiri-Clone T-Bag'
+Event.OnElimination
+Team.Team2
+Player.Slot1
+if (HeroOf(EventPlayer()) == Hero.Kiriko)
+{
+    Wait(0.5);
+    if (!IsFiringPrimary(EventPlayer()) && !IsFiringSecondary(EventPlayer()))
+    {
+        StartHoldingButton(EventPlayer(), Button.Crouch);
+        Wait(0.1);
+        StopHoldingButton(EventPlayer(), Button.Crouch);
+        Wait(0.15);
+        SkipIf(IsFiringSecondary(EventPlayer()), 4);
+        StartHoldingButton(EventPlayer(), Button.Crouch);
+        Wait(0.1);
+        StopHoldingButton(EventPlayer(), Button.Crouch);
+        Wait(0.15);
+        SkipIf(IsFiringSecondary(EventPlayer()), 4);
+        StartHoldingButton(EventPlayer(), Button.Crouch);
+        Wait(0.1);
+        StopHoldingButton(EventPlayer(), Button.Crouch);
+        Wait(0.15);
+        SkipIf(IsFiringSecondary(EventPlayer()), 2);
+        StartHoldingButton(EventPlayer(), Button.Crouch);
+        Wait(0.1);
+        StopHoldingButton(EventPlayer(), Button.Crouch);
+    }
+}
+
+rule: 'Kiri-Clone Ult Convert'
+Event.OngoingPlayer
+Team.Team2
+Player.Slot0
+if (HeroOf(EventPlayer()) == Hero.Kiriko)
+if (UltimateChargePercent(PlayersInSlot(1, Team.Team2)) > 0)
+{
+    SetUltimateCharge(EventPlayer(), UltimateChargePercent(EventPlayer()) + (UltimateChargePercent(PlayersInSlot(1, Team.Team2)) / 2));
+    SetUltimateCharge(PlayersInSlot(1, Team.Team2), 0);
+}

@@ -1,0 +1,5 @@
+import "strings.del";
+rule: 'Version Number'
+{
+    CreateHudText(AllPlayers(Team.All), null, VERSION, null, Location.Top, 0, null, Color.Yellow);
+}

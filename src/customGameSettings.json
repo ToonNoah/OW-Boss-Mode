@@ -1,0 +1,85 @@
+{
+    "Lobby": {
+        "Team Balancing": "After A Mirror Match",
+        "Swap Teams After Match": true,
+        "Max Team 1 Players": 5,
+        "Max Team 2 Players": 1,
+        "Max Spectators": 12,
+        "Match Voice Chat": true
+    },
+    "Modes": {
+        "All": {
+            "Skins": false,
+            "Limit Roles": "2 Of Each Role Per Team",
+            "Tank Role Passive Health Bonus": "Disabled"
+        },
+        "Push": {
+            "Enabled": false 
+        },
+        "Control": {
+            "Competitive Rules": true
+        },
+        "Escort": {
+            "Competitive Rules": true
+        },
+        "Hybrid": {
+            "Competitive Rules": true
+        }
+    },
+    "Heroes": {
+        "Team 1": {
+            "Disabled Heroes": [
+                "Sombra",
+                "Orisa"
+            ]
+        },
+        "Team 2": {
+            "Disabled Heroes": [
+                "Junker Queen",
+                "Orisa",
+                "Ramattra",
+                "Roadhog",
+                "Winston",
+                "Wrecking Ball",
+                "Zarya",
+                "Ashe",
+                "Bastion",
+                "Cassidy",
+                "Echo",
+                "Genji",
+                "Hanzo",
+                "Junkrat",
+                "Mei",
+                "Pharah",
+                "Reaper",
+                "Sojourn",
+                "Soldier: 76",
+                "Sombra",
+                "Symmetra",
+                "Torbjörn",
+                "Tracer",
+                "Widowmaker",
+                "Ana",
+                "Baptiste",
+                "Brigitte",
+                "Lifeweaver",
+                "Lúcio",
+                "Mercy",
+                "Moira",
+                "Zenyatta"
+            ]
+        }
+    },
+    "Extensions": {
+        "Buff and Debuff Sounds": true,
+        "Explosion Sounds": true,
+        "Beam Effects": true,
+        "Beam Sounds": true,
+        "Buff Status Effects": true,
+        "Debuff Status Effects": true,
+        "Energy Explosion Effects": true,
+        "Kinetic Explosion Effects": true,
+        "Projectiles": true,
+        "Play More Effects": true
+    }
+}

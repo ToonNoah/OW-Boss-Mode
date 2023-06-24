@@ -1,0 +1,379 @@
+import "../boss_stats.del";
+
+struct DvaData{
+    public Number dvaMissileCooldown;
+    public Number dvaMissileTextID;
+    public Player dvaMissileTarget;
+    public Number dvaMissileReticle;
+    public Number dvaMissileAmmo;
+    public Number dvaMatrixHeroStat;
+    public Boolean dvaIsDemeched;
+    public Number dvaDemechedEffectID;}
+
+playervar DvaData dvaData = {
+    dvaMissileCooldown: 0,
+    dvaMissileTextID: 0,
+    dvaMissileTarget: null,
+    dvaMissileReticle: 0,
+    dvaMissileAmmo: 0,
+    dvaMatrixHeroStat: 0,
+    dvaIsDemeched: false,
+    dvaDemechedEffectID: 0,
+};
+
+rule: "D.Va Boss Settings"
+Event.OngoingPlayer
+Team.Team2
+Player.Slot0
+if (HeroOf(EventPlayer()) == Hero.Dva)
+if (HasSpawned(EventPlayer()))
+{
+    bossStats = {
+        bossInfo: null,
+        bossInfoStringID: 0,
+        bossInfoToggle: true,        
+        currentBoss: HeroOf(EventPlayer()),
+        damageDealt: WorkshopSettingReal(
+            DVA_STATS,
+            "D.Va Damage Dealt",
+            150,
+            0,
+            500,
+            0,
+        ),
+        damageReceived: WorkshopSettingReal(
+            DVA_STATS,
+            "D.Va Damage Received",
+            100,
+            0,
+            500,
+            1,
+        ),
+        healingDealt: WorkshopSettingReal(
+            DVA_STATS,
+            "D.Va Healing Dealt",
+            50,
+            0,
+            500,
+            2,
+        ),
+        healingReceived: WorkshopSettingReal(
+            DVA_STATS,
+            "D.Va Healing Received",
+            150,
+            0,
+            500,
+            3,
+        ),
+        health: WorkshopSettingReal(
+            DVA_STATS, 
+            "D.Va Health", 
+            150, 
+            0.5, 
+            500, 
+            4,
+        ),
+        jumpSpeed: WorkshopSettingReal(
+            DVA_STATS,
+            "D.Va Jump Speed",
+            100,
+            0,
+            500,
+            5,
+        ),
+        gravity: WorkshopSettingReal(
+            DVA_STATS,
+            "D.Va Gravity",
+            100,
+            0,
+            500,
+            6,
+        ),
+        moveSpeed: WorkshopSettingReal(
+            DVA_STATS,
+            "D.Va Movement Speed",
+            150,
+            0,
+            500,
+            7,
+        ),
+        projectileSpeed: WorkshopSettingReal(
+            DVA_STATS,
+            "D.Va Projectile Speed",
+            100,
+            0,
+            500,
+            8
+        ),
+        scale: WorkshopSettingReal(
+            DVA_STATS,
+            "D.Va Scale",
+            1.2,
+            1,
+            10,
+            9,
+        ),
+        voiceScale: WorkshopSettingReal(
+            DVA_STATS,
+            "D.Va Voice Scale",
+            0.75,
+            0.001,
+            2,
+            10,
+        ),          
+        secondaryCooldown: WorkshopSettingReal(
+            DVA_ABILITIES,
+            "D.Va Defense Matrix Cooldown",
+            1,
+            0,
+            500,
+            0
+
+        ),
+        ability1Cooldown: WorkshopSettingReal(
+            DVA_ABILITIES,
+            "D.Va Boosters Cooldown",
+            1,
+            0,
+            500,
+            1
+        ),
+        ability2Cooldown: WorkshopSettingReal(
+            DVA_ABILITIES,
+            "D.Va Homing Missiles Cooldown",
+            5,
+            0,
+            500,
+            2
+        ),
+        jumpAbilityCooldown: 0,
+        crouchAbilityCooldown: 0,
+        raycastEnd: Vector(0, 0, 0),
+        hackedTimer: 0,
+        stunned: false,
+
+    };
+    ApplyBossStats();
+    bossStats.bossInfo[0] = "Damage blocked with Defense Matrix heals the boss.";
+    bossStats.bossInfo[1] = "Can shoot Homing Missiles at glowing targets.";
+    dvaData.dvaIsDemeched = false;
+}
+
+rule: 'D.Va Disable Micro Missiles'
+Event.OngoingPlayer
+Team.All
+Player.All
+if (HeroOf(EventPlayer()) == Hero.Dva)
+if (TeamOf(EventPlayer()) == Team.Team2)
+{
+    SetAbility2Enabled(EventPlayer(), false);
+    WaitUntil(HeroOf(EventPlayer()) != Hero.Dva || TeamOf(EventPlayer()) == Team.Team1, 999999);
+    SetAbility2Enabled(EventPlayer(), true);
+    DestroyEffect(dvaData.dvaMissileReticle);
+}
+
+rule: 'D.Va Activate Missiles'
+Event.OngoingPlayer
+Team.Team2
+Player.Dva
+if (IsButtonHeld(EventPlayer(), Button.Ability2))
+if (dvaData.dvaMissileAmmo <= 0)
+if (!bossStats.stunned == true)
+if (dvaData.dvaMissileCooldown <= 0)
+if (!IsInAlternateForm(EventPlayer()))
+
+{
+    PlayEffect(AllPlayers(Team.All), PlayEffect.BrigitteRepairPackImpactSound, null, PositionOf(EventPlayer()), 80);
+    //dvaData.dvaMissileAmmo = -1;
+    Wait(0.256);
+    if (bossStats.stunned != true)
+    {
+        dvaData.dvaMissileAmmo = 9;
+    }
+    else
+    {
+        dvaData.dvaMissileAmmo = 0;
+    }
+    WaitUntil(dvaData.dvaMissileAmmo <= 0, 999999);
+    dvaData.dvaMissileCooldown = bossStats.ability2Cooldown;
+}
+
+rule: 'D.Va Missile Create Timer'
+Event.OngoingPlayer
+Team.Team2
+Player.Dva
+if (dvaData.dvaMissileTextID == 0)
+if (!IsInAlternateForm(EventPlayer()))
+{
+    CreateInWorldText(EventPlayer(), <"<0>", AbilityIconString(Hero.Dva, Button.Ability2)>, UpdateEveryFrame(EyePosition(EventPlayer()) + 100 * (2.325 * WorldVectorOf(Right(), EventPlayer(), LocalVector.Rotation) + -1.4 * DirectionFromAngles(HorizontalAngleFromDirection(FacingDirectionOf(EventPlayer())), VerticalAngleFromDirection(FacingDirectionOf(EventPlayer())) - 90) + 3 * FacingDirectionOf(EventPlayer()))), 3, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndString, CustomColor(255, 255, 255, 255), Spectators.DefaultVisibility);
+    dvaData.dvaMissileTextID = LastTextID();
+}
+
+rule: 'D.Va Missile Timer Tick'
+Event.OngoingPlayer
+Team.Team2
+Player.Dva
+if (dvaData.dvaMissileCooldown > 0)
+{
+    DestroyInWorldText(dvaData.dvaMissileTextID);
+    CreateInWorldText(EventPlayer(), <"<0>", dvaData.dvaMissileCooldown>, UpdateEveryFrame(EyePosition(EventPlayer()) + 100 * (2.325 * WorldVectorOf(Right(), EventPlayer(), LocalVector.Rotation) + -1.4 * DirectionFromAngles(HorizontalAngleFromDirection(FacingDirectionOf(EventPlayer())), VerticalAngleFromDirection(FacingDirectionOf(EventPlayer())) - 90) + 3 * FacingDirectionOf(EventPlayer()))), 3, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndString, CustomColor(255, 139, 36, 255), Spectators.DefaultVisibility);
+    dvaData.dvaMissileTextID = LastTextID();
+    Wait(1, WaitBehavior.IgnoreCondition);
+    if (dvaData.dvaMissileCooldown == 1)
+    {
+        DestroyInWorldText(dvaData.dvaMissileTextID);
+        CreateInWorldText(EventPlayer(), <"<0>", AbilityIconString(Hero.Dva, Button.Ability2)>, UpdateEveryFrame(EyePosition(EventPlayer()) + 100 * (2.325 * WorldVectorOf(Right(), EventPlayer(), LocalVector.Rotation) + -1.4 * DirectionFromAngles(HorizontalAngleFromDirection(FacingDirectionOf(EventPlayer())), VerticalAngleFromDirection(FacingDirectionOf(EventPlayer())) - 90) + 3 * FacingDirectionOf(EventPlayer()))), 3, Clipping.DoNotClip, InworldTextRev.VisibleToPositionAndString, CustomColor(255, 255, 255, 255), Spectators.DefaultVisibility);
+        dvaData.dvaMissileTextID = LastTextID();
+        PlayEffect(EventPlayer(), PlayEffect.HanzoSonicArrowInitialPulseSound, Color.White, EventPlayer(), 200);
+        BigMessage(EventPlayer(), "Homing Missiles are ready!");
+    }
+    dvaData.dvaMissileCooldown -= 1;
+    LoopIfConditionIsTrue();
+}
+
+rule: 'D.Va Missile Destroy Timer 1'
+Event.OngoingPlayer
+Team.Team2
+Player.Slot0
+if (HeroOf(EventPlayer()) != Hero.Dva)
+if (dvaData.dvaMissileTextID != 0)
+{
+    DestroyInWorldText(dvaData.dvaMissileTextID);
+    dvaData.dvaMissileTextID = 0;
+}
+
+rule: 'D.Va Missile Destroy Timer 2'
+Event.OngoingPlayer
+Team.Team2
+Player.Dva
+if (IsInAlternateForm(EventPlayer()))
+if (dvaData.dvaMissileTextID != 0)
+{
+    DestroyInWorldText(dvaData.dvaMissileTextID);
+    dvaData.dvaMissileTextID = 0;
+}
+
+rule: 'D.Va Homing Target'
+Event.OngoingPlayer
+Team.Team2
+Player.Dva
+if (dvaData.dvaMissileAmmo == 0)
+if (IsAlive(EventPlayer()))
+{
+    while (dvaData.dvaMissileAmmo == 0)
+        {    
+            StopForcingPlayerOutlines(dvaData.dvaMissileTarget, EventPlayer());
+            dvaData.dvaMissileTarget = FirstOf(RemoveFromArray(SortedArray(FilteredArray(PlayersWithinRadius(EyePosition(EventPlayer()), 100, Team.Team1, RadiusLOS.Surfaces), (IsAlive(ArrayElement()))), AngleBetweenVectors(FacingDirectionOf(EventPlayer()), VectorTowards(EventPlayer(), ArrayElement()))), !PlayersInViewAngle(EventPlayer(), Team.Team1, 8)));
+            DestroyEffect(dvaData.dvaMissileReticle);
+            if ((dvaData.dvaMissileTarget != null || 0) && (dvaData.dvaMissileCooldown == 0))
+            {
+                CreateEffect(EventPlayer(), Effect.GoodAura, Color.Team1, dvaData.dvaMissileTarget, 1, EffectRev.PositionAndRadius);
+                dvaData.dvaMissileReticle = (LastCreatedEntity());
+            }
+            Wait(0.01, WaitBehavior.IgnoreCondition);
+        }
+}
+
+rule: 'D.Va Homing Missiles'
+Event.OngoingPlayer
+Team.Team2
+Player.Dva
+if (dvaData.dvaMissileAmmo > 0)
+{
+    StartForcingPlayerOutlines(dvaData.dvaMissileTarget, EventPlayer(), true, Color.Team1, OutlineType.Always);
+    Wait(0.09, WaitBehavior.IgnoreCondition);
+    CreateHomingProjectile(ProjectileType.PharahRocket, EventPlayer(), WorldVectorOf(Vector(-0.4,2,0), EventPlayer(), LocalVector.RotationAndTranslation), null, Relative.ToWorld, ModifyHealthType.Damage, Team.Team1, 7, 1, 1.5, PlayEffect.DvaMicroMissilesExplosionEffect, PlayEffect.DvaMicroMissilesExplosionSound, 0, 40, 10, 0, dvaData.dvaMissileTarget, 1);
+    PlayEffect(AllPlayers(Team.All), PlayEffect.WidowmakerVenomMineExplosionSound, null, WorldVectorOf(Vector(-0.4,2,0), EventPlayer(), LocalVector.RotationAndTranslation), 50);
+    Wait(0.09, WaitBehavior.IgnoreCondition);
+    CreateHomingProjectile(ProjectileType.PharahRocket, EventPlayer(), WorldVectorOf(Vector(0.4,2,0), EventPlayer(), LocalVector.RotationAndTranslation), null, Relative.ToWorld, ModifyHealthType.Damage, Team.Team1, 7, 1, 1.5, PlayEffect.DvaMicroMissilesExplosionEffect, PlayEffect.DvaMicroMissilesExplosionSound, 0, 40, 10, 0, dvaData.dvaMissileTarget, 1);
+    PlayEffect(AllPlayers(Team.All), PlayEffect.WidowmakerVenomMineExplosionSound, null, WorldVectorOf(Vector(0.4,2,0), EventPlayer(), LocalVector.RotationAndTranslation), 50);
+    dvaData.dvaMissileAmmo -= 1;
+    LoopIfConditionIsTrue();
+}
+
+rule: 'D.Va Homing Elimination'
+Event.OnElimination
+Team.Team2
+Player.Dva
+if (!dvaData.dvaMissileAmmo == 0)
+{
+    DestroyEffect(dvaData.dvaMissileReticle);
+    StopForcingPlayerOutlines(dvaData.dvaMissileTarget, EventPlayer());
+    dvaData.dvaMissileTarget = null;
+}
+
+rule: 'D.Va Homing Stop Tracking'
+Event.OngoingPlayer
+Team.Team2
+Player.Dva
+if (!dvaData.dvaMissileAmmo == 0)
+if ((ArrayContains([Hero.Sombra, Hero.Moira, Hero.Kiriko], HeroOf(dvaData.dvaMissileTarget)) && IsUsingAbility1(dvaData.dvaMissileTarget)) || (ArrayContains([Hero.Sombra, Hero.Tracer], HeroOf(dvaData.dvaMissileTarget)) && IsUsingAbility2(dvaData.dvaMissileTarget)))
+{
+    Wait(1, WaitBehavior.AbortWhenFalse);
+    DestroyEffect(dvaData.dvaMissileReticle);
+    StopForcingPlayerOutlines(dvaData.dvaMissileTarget, EventPlayer());
+    dvaData.dvaMissileTarget = null;
+}
+
+rule: 'D.Va Matrix Heal'
+Event.OngoingPlayer
+Team.Team2
+Player.Dva
+if (dvaData.dvaMatrixHeroStat < PlayerHeroStat(EventPlayer(), Hero.Dva, PlayerHeroStat.DamageBlocked))
+{
+    Heal(EventPlayer(), EventPlayer(), PlayerHeroStat(EventPlayer(), Hero.Dva, PlayerHeroStat.DamageBlocked) - dvaData.dvaMatrixHeroStat);
+    PlayEffect(AllPlayers(), PlayEffect.HealTargetActiveEffect, Color.Team2, EventPlayer(), 1);
+    dvaData.dvaMatrixHeroStat = EvaluateOnce(PlayerHeroStat(EventPlayer(), Hero.Dva, PlayerHeroStat.DamageBlocked));
+}
+
+disabled rule: 'D.Va is Demeched Trigger'
+Event.OngoingPlayer
+Team.Team2
+Player.Dva
+if (IsInAlternateForm(EventPlayer()))
+if (!dvaData.dvaIsDemeched == true)
+{
+    SetStatus(EventPlayer(), null, Status.PhasedOut, 3);
+    CreateEffect(AllPlayers(Team.All), Effect.BaptisteImmortalityFieldProtectedEffect, Color.Team2, EventPlayer(), 1, EffectRev.PositionAndRadius);
+    dvaData.dvaDemechedEffectID[0] = LastCreatedEntity();
+    CreateEffect(AllPlayers(Team.All), Effect.BaptisteImmortalityFieldProtectedSound, Color.Team2, EventPlayer(), 50, EffectRev.PositionAndRadius);
+    dvaData.dvaDemechedEffectID[1] = LastCreatedEntity();  
+    CreateEffect(AllPlayers(Team.All), Effect.Soldier76SprintingEffect, Color.Team2, EventPlayer(), 1, EffectRev.PositionAndRadius);  
+    dvaData.dvaDemechedEffectID[2] = LastCreatedEntity();  
+    SetMoveSpeed(EventPlayer(), bossStats.moveSpeed * 2);
+    Wait(3);
+    SetMoveSpeed(EventPlayer(), 100);
+    DestroyEffect(dvaData.dvaDemechedEffectID[0]);
+    DestroyEffect(dvaData.dvaDemechedEffectID[1]);
+    DestroyEffect(dvaData.dvaDemechedEffectID[2]);
+}
+
+rule: 'D.Va is dead'
+Event.OnDeath
+Team.Team2
+Player.Dva
+{
+    WaitUntil(IsAlive(EventPlayer()), 999999);
+    ApplyBossStats();
+}
+
+disabled rule: 'D.Va HealHUD'
+Event.OngoingPlayer
+Team.Team2
+Player.Dva
+{
+    CreateHudText(EventPlayer(), PlayerHeroStat(EventPlayer(), Hero.Dva, PlayerHeroStat.DamageBlocked), dvaData.dvaMatrixHeroStat, null, Location.Left, 0, Color.White, Color.White, Color.White, HudTextRev.String, Spectators.DefaultVisibility);
+}
+
+rule: 'D.Va Stunned'
+Event.OngoingPlayer
+Team.Team2
+Player.Dva
+if (bossStats.stunned == true)
+if (dvaData.dvaMissileAmmo > 0)
+{
+    dvaData.dvaMissileAmmo = 0;
+    dvaData.dvaMissileCooldown = bossStats.ability2Cooldown;
+    DestroyEffect(dvaData.dvaMissileReticle);
+    dvaData.dvaMissileReticle = 0;
+}

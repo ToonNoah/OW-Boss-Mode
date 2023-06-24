@@ -1,0 +1,231 @@
+import "../boss_stats.del";
+
+struct DoomfistData{
+    public Number doomTimeDamageBlockedCurrent;
+    public Number doomTimeDamageBlockedTotal;
+    public Boolean doomTimeOn;
+    public Number doomTimeTimer;
+    public Number doomTimeTimerID;
+    public Number doomTimeColorID;
+}
+
+playervar DoomfistData doomfistData = {
+    doomTimeDamageBlockedCurrent: 0,
+    doomTimeDamageBlockedTotal: 0,
+    doomTimeOn: 0,
+    doomTimeTimer: 0,
+    doomTimeTimerID: 0,
+    doomTimeColorID: 0,
+};
+
+rule: "Doomfist Boss Settings"
+Event.OngoingPlayer
+Team.Team2
+Player.Slot0
+if (HeroOf(EventPlayer()) == Hero.Doomfist)
+if (HasSpawned(EventPlayer()))
+{
+    bossStats = {
+        bossInfo: null,
+        bossInfoStringID: 0,
+        bossInfoToggle: true,        
+        currentBoss: HeroOf(EventPlayer()),
+        damageDealt: WorkshopSettingReal(
+            DOOMFIST_STATS,
+            "Doomfist Damage Dealt",
+            200,
+            0,
+            500,
+            0,
+        ),
+        damageReceived: WorkshopSettingReal(
+            DOOMFIST_STATS,
+            "Doomfist Damage Received",
+            100,
+            0,
+            500,
+            1,
+        ),
+        healingDealt: 100,
+        healingReceived: WorkshopSettingReal(
+            DOOMFIST_STATS,
+            "Doomfist Healing Received",
+            150,
+            0,
+            500,
+            3,
+        ),
+        health: WorkshopSettingReal(
+            DOOMFIST_STATS, 
+            "Doomfist Health", 
+            200, 
+            0.01, 
+            500, 
+            4,
+        ),
+        jumpSpeed: WorkshopSettingReal(
+            DOOMFIST_STATS,
+            "Doomfist Jump Speed",
+            100,
+            0,
+            500,
+            5,
+        ),
+        gravity: WorkshopSettingReal(
+            DOOMFIST_STATS,
+            "Doomfist Gravity",
+            100,
+            0,
+            500,
+            6,
+        ),
+        moveSpeed: WorkshopSettingReal(
+            DOOMFIST_STATS,
+            "Doomfist Movement Speed",
+            150,
+            0,
+            500,
+            7,
+        ),
+        projectileSpeed: WorkshopSettingReal(
+            DOOMFIST_STATS,
+            "Doomfist Projectile Speed",
+            100,
+            0,
+            500,
+            8
+        ),
+        scale: WorkshopSettingReal(
+            DOOMFIST_STATS,
+            "Doomfist Scale",
+            1.2,
+            0.001,
+            10,
+            9,
+        ),
+        voiceScale: WorkshopSettingReal(
+            DOOMFIST_STATS,
+            "Doomfist Voice Scale",
+            0.75,
+            0.001,
+            2,
+            10,
+        ),          
+        secondaryCooldown: WorkshopSettingReal(
+            DOOMFIST_ABILITIES,
+            "Doomfist Rocket Punch Cooldown",
+            4,
+            0,
+            500,
+            0
+
+        ),
+        ability1Cooldown: WorkshopSettingReal(
+            DOOMFIST_ABILITIES,
+            "Doomfist Seismic Slam Cooldown",
+            7,
+            0,
+            500,
+            1
+        ),
+        ability2Cooldown: WorkshopSettingReal(
+            DOOMFIST_ABILITIES,
+            "Doomfist Power Block Cooldown",
+            7,
+            0,
+            500,
+            2
+        ),
+        jumpAbilityCooldown: 0,
+        crouchAbilityCooldown: 0,
+        raycastEnd: Vector(0, 0, 0),
+        hackedTimer: 0,
+        stunned: false,
+    };
+    ApplyBossStats();
+    bossStats.bossInfo[0] = "Can enter Doomtime if he takes 100 damage during Power Block.";
+    bossStats.bossInfo[1] = "Using his Ultimate also starts Doomtime.";
+}
+
+rule: 'Doomtime Block'
+Event.OngoingPlayer
+Team.Team2
+Player.Doomfist
+if (IsUsingAbility2(EventPlayer()) || IsUsingUltimate(EventPlayer()))
+{
+    if (IsUsingUltimate(EventPlayer()))
+    {
+        WaitUntil(!IsUsingUltimate(EventPlayer()) && IsOnGround(EventPlayer()), 999999);
+        doomfistData.doomTimeOn = true;
+        doomfistData.doomTimeTimer = 100;
+        Abort();
+    }
+    doomfistData.doomTimeDamageBlockedTotal = EvaluateOnce(PlayerHeroStat(EventPlayer(), Hero.Doomfist, PlayerHeroStat.DamageTaken));
+    while (IsUsingAbility2(EventPlayer()))
+    {
+        doomfistData.doomTimeDamageBlockedCurrent = PlayerHeroStat(EventPlayer(), Hero.Doomfist, PlayerHeroStat.DamageTaken) - doomfistData.doomTimeDamageBlockedTotal;
+        MinWait();
+        if (doomfistData.doomTimeDamageBlockedCurrent >= 20)
+        {
+            doomfistData.doomTimeOn = true;
+            doomfistData.doomTimeTimer = 100;
+        }
+    }
+    WaitUntil(!IsUsingAbility2(EventPlayer()), 999999);
+    doomfistData.doomTimeDamageBlockedCurrent = 0;
+    doomfistData.doomTimeDamageBlockedTotal = PlayerHeroStat(EventPlayer(), Hero.Doomfist, PlayerHeroStat.DamageTaken);
+}
+
+rule: 'Doomtime'
+Event.OngoingPlayer
+Team.Team2
+Player.Doomfist
+if (doomfistData.doomTimeOn)
+if (IsAlive(EventPlayer()))
+if (!bossStats.stunned)
+{
+    BigMessage(AllPlayers(Team.All), "It's Doomtime!");
+    SetSlowMotion(50);
+    SetMoveSpeed(EventPlayer(), bossStats.moveSpeed * 2);
+    WaitUntil(IsFiringSecondary(EventPlayer()) || !doomfistData.doomTimeOn || doomfistData.doomTimeTimer <= 0 || IsDead(EventPlayer()), 999999);
+    WaitUntil(!IsFiringSecondary(EventPlayer()) || doomfistData.doomTimeTimer <= 0, 999999);
+        doomfistData.doomTimeOn = false;
+        doomfistData.doomTimeTimer = 0;
+        DestroyProgressBarHudText(doomfistData.doomTimeTimerID);
+    SetSlowMotion(100);
+    SetMoveSpeed(EventPlayer(), bossStats.moveSpeed);
+}
+
+rule: 'Doomtime Progress Bar'
+Event.OngoingPlayer
+Team.Team2
+Player.Doomfist
+if (doomfistData.doomTimeTimer > 0)
+if (doomfistData.doomTimeTimerID == 0)
+{
+    DestroyProgressBarHudText(doomfistData.doomTimeTimerID);
+    CreateProgressBarHudText(EventPlayer(), doomfistData.doomTimeTimer, "Doomtime!", Location.Top, 1, Color.White, Color.White);
+    doomfistData.doomTimeTimerID = LastTextID();
+    while (doomfistData.doomTimeTimer > 0)
+    {
+        Wait(0.002);
+        doomfistData.doomTimeTimer -= 0.2;
+    }
+    WaitUntil(doomfistData.doomTimeTimer <= 0, 999999);
+    DestroyProgressBarHudText(doomfistData.doomTimeTimerID);
+    doomfistData.doomTimeTimerID = 0;
+}
+
+rule: 'Doomtime Color'
+Event.OngoingPlayer
+Team.All
+Player.All
+if (PlayersInSlot(0, Team.Team2).doomfistData.doomTimeOn == true)
+{
+    PlayEffect(EventPlayer(), PlayEffect.RingExplosionSound, Color.White, EventPlayer(), 200);
+    PlayEffect(PlayersInSlot(0, Team.Team2), PlayEffect.RingExplosion, CustomColor(80, 80, 80, 255), EventPlayer(), 5);
+    CreateEffect(EventPlayer(), Effect.Sphere, CustomColor(80, 80, 80, 255), EyePosition(EventPlayer()), 0.5, EffectRev.PositionAndRadius);
+    doomfistData.doomTimeColorID = LastCreatedEntity();
+    WaitUntil(!PlayersInSlot(0, Team.Team2).doomfistData.doomTimeOn == true, 999999);
+    DestroyEffect(doomfistData.doomTimeColorID);
+}

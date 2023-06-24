@@ -1,0 +1,46 @@
+import "boss_stats.del";
+
+rule: 'Secondary Fire Cooldown'
+Event.OngoingPlayer
+Team.Team2
+Player.Slot0
+if (AbilityCooldown(EventPlayer(), Button.SecondaryFire) > 0) 
+{
+    SetAbilityCooldown(EventPlayer(), Button.SecondaryFire, bossStats.secondaryCooldown);
+}
+
+rule: 'Ability 1 Cooldown'
+Event.OngoingPlayer
+Team.Team2
+Player.Slot0
+if (AbilityCooldown(EventPlayer(), Button.Ability1) > 0) 
+{
+    SetAbilityCooldown(EventPlayer(), Button.Ability1, bossStats.ability1Cooldown);
+}
+
+rule: 'Ability 2 Cooldown'
+Event.OngoingPlayer
+Team.Team2
+Player.Slot0
+if (AbilityCooldown(EventPlayer(), Button.Ability2) > 0) 
+{
+    SetAbilityCooldown(EventPlayer(), Button.Ability2, bossStats.ability2Cooldown);
+}
+
+rule: 'Jump Cooldown'
+Event.OngoingPlayer
+Team.Team2
+Player.Slot0
+if (AbilityCooldown(EventPlayer(), Button.Jump) > 0) 
+{
+    SetAbilityCooldown(EventPlayer(), Button.Jump, bossStats.jumpAbilityCooldown);
+}
+
+rule: 'Crouch Cooldown'
+Event.OngoingPlayer
+Team.Team2
+Player.Slot0
+if (AbilityCooldown(EventPlayer(), Button.Crouch) > 0) 
+{
+    SetAbilityCooldown(EventPlayer(), Button.Crouch, bossStats.crouchAbilityCooldown);
+}

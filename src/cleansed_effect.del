@@ -1,0 +1,88 @@
+playervar define cleansed;
+playervar define zBubble;
+
+rule: 'Cleanse: Ability 1'
+Event.OngoingPlayer
+if (ArrayContains([Hero.Reaper, Hero.Moira, Hero.Kiriko, Hero.Mei], HeroOf(EventPlayer())))
+if (IsUsingAbility1(EventPlayer()))
+{
+    cleansed = true;
+    WaitUntil(!IsUsingAbility1(EventPlayer()), 999999);
+    cleansed = false;
+}
+
+rule: 'Cleanse: Ability 2'
+Event.OngoingPlayer
+if (ArrayContains([Hero.Reaper, Hero.Tracer], HeroOf(EventPlayer())))
+if (IsUsingAbility2(EventPlayer()))
+{
+    if (HeroOf(EventPlayer()) == Hero.Reaper)
+    {
+        Wait(0.992);
+        SkipIf(!IsUsingAbility2(EventPlayer()), 3);
+        cleansed = true;
+        Wait(1.008);
+        cleansed = false;  
+    }
+    else
+    {
+    cleansed = true;
+    WaitUntil(!IsUsingAbility2(EventPlayer()), 999999);
+    cleansed = false;
+    }
+}
+
+rule: 'Cleanse: Doomfist Ultimate'
+Event.OngoingPlayer
+Player.Doomfist
+if (IsUsingUltimate(EventPlayer()))
+{
+    cleansed = true;
+    Wait(1);
+    cleansed = false;
+}
+
+rule: 'Cleanse: Kiriko Suzu'
+Event.OnHealingDealt
+Player.Kiriko
+if (EventAbility() == Button.Ability2)
+{
+    Healee().cleansed = true;
+    Wait(0.85);
+    Healee().cleansed = false;
+}
+
+rule: 'Cleanse: Sombra'
+Event.OngoingPlayer
+Player.Sombra
+if (IsUsingAbility2(EventPlayer()))
+{
+    WaitUntil(!IsUsingAbility2(EventPlayer()), 999999);
+    SkipIf(!IsButtonHeld(EventPlayer(), Button.Ability2), 1);
+    cleansed = true;
+    Wait(0.4);
+    cleansed = false;
+}
+
+rule: 'Cleanse: Zarya Ability 1'
+Event.OngoingPlayer
+Player.Zarya
+if (IsUsingAbility1(EventPlayer()))
+{
+    cleansed = true;
+    WaitUntil(!IsUsingAbility1(EventPlayer()), 999999);
+    cleansed = false;
+}
+
+rule: 'Cleanse: Zarya Ability 2'
+Event.OngoingPlayer
+Player.Zarya
+if (IsUsingAbility2(EventPlayer()))
+{
+    
+    zBubble = PlayerClosestToReticle(EventPlayer(), TeamOf(EventPlayer()));
+    zBubble.cleansed = true;
+    WaitUntil(!IsUsingAbility2(EventPlayer()), 999999);
+    zBubble.cleansed = false;
+    zBubble = null;
+}

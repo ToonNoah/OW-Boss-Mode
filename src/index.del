@@ -1,1 +1,17 @@
+import "debug.del";
+import "version_number.del";
+import "customGameSettings.json";
+import "team_1_balance.del";
+import "payload_radius.del";
+import "cleansed_effect.del";
+import "autobalance+supportpassive.del";
+import "hero_blacklist.del";
+
+import "heroes/doomfist.del";
+import "heroes/dva.del";
+import "heroes/kiriko.del";
+import "heroes/orisa.del";
 import "heroes/reinhardt.del";
+import "heroes/sigma.del";
+
+import "ability_cooldowns.del";

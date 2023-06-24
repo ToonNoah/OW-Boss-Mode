@@ -1,0 +1,335 @@
+import "../boss_stats.del";
+import "../cleansed_effect.del";
+
+struct SigmaData{
+    public Vector throttleXYZ;
+    public Number kineticGraspScale;
+    public Number kineticGraspID;
+    public Color kineticGraspColor;
+    public Player kineticGraspVictims;
+    public Number kineticGraspVictimGravity;
+    public Number kineticGraspVictimCoil;
+    public Number damageMitigated;
+}
+
+playervar SigmaData sigmaData = {
+    throttleXYZ: Vector(0,0,0),
+    kineticGraspScale: 0,
+    kineticGraspID: 0,
+    kineticGraspColor: null,
+    kineticGraspVictims: null,
+    kineticGraspVictimGravity: 0,
+    kineticGraspVictimCoil: 0,
+    damageMitigated: 0,
+};
+
+rule: "Sigma Boss Settings"
+Event.OngoingPlayer
+Team.Team2
+Player.Slot0
+if (HeroOf(EventPlayer()) == Hero.Sigma)
+if (HasSpawned(EventPlayer()))
+{
+    bossStats = {
+        bossInfo: null,
+        bossInfoStringID: 0,
+        bossInfoToggle: true,        
+        currentBoss: HeroOf(EventPlayer()),
+        damageDealt: WorkshopSettingReal(
+            SIGMA_STATS,
+            "Sigma Damage Dealt",
+            150,
+            0,
+            500,
+            0,
+        ),
+        damageReceived: WorkshopSettingReal(
+            SIGMA_STATS,
+            "Sigma Damage Received",
+            100,
+            0,
+            500,
+            1,
+        ),
+        healingDealt: 100,
+        healingReceived: WorkshopSettingReal(
+            SIGMA_STATS,
+            "Sigma Healing Received",
+            150,
+            0,
+            500,
+            3,
+        ),
+        health: WorkshopSettingReal(
+            SIGMA_STATS, 
+            "Sigma Health", 
+            150, 
+            0.01, 
+            500, 
+            4,
+        ),
+        jumpSpeed: WorkshopSettingReal(
+            SIGMA_STATS, 
+            "Sigma Jump Speed", 
+            100, 
+            0.01, 
+            500, 
+            5,
+        ),
+        gravity: WorkshopSettingReal(
+            SIGMA_STATS,
+            "Sigma Gravity",
+            100,
+            0,
+            500,
+            6
+        ),
+        moveSpeed: WorkshopSettingReal(
+            SIGMA_STATS,
+            "Sigma Movement Speed",
+            150,
+            0,
+            500,
+            7
+        ),
+        projectileSpeed: WorkshopSettingReal(
+            SIGMA_STATS,
+            "Sigma Projectile Speed",
+            100,
+            0,
+            500,
+            8
+        ),
+        scale: WorkshopSettingReal(
+            SIGMA_STATS,
+            "Sigma Scale",
+            1.1,
+            0.001,
+            10,
+            9,
+        ),
+        voiceScale: WorkshopSettingReal(
+            SIGMA_STATS,
+            "Sigma Voice Scale",
+            0.75,
+            0.001,
+            2,
+            10,
+        ),          
+        secondaryCooldown: WorkshopSettingReal(
+            SIGMA_ABILITIES,
+            "Sigma Experimental Barrier Cooldown",
+            2,
+            0,
+            500,
+            0
+
+        ),
+        ability1Cooldown: WorkshopSettingReal(
+            SIGMA_ABILITIES,
+            "Sigma Kinetic Grasp Cooldown",
+            8,
+            0,
+            500,
+            1
+        ),
+        ability2Cooldown: WorkshopSettingReal(
+            SIGMA_ABILITIES,
+            "Sigma Accretion Cooldown",
+            2.5,
+            0,
+            500,
+            2
+        ),
+        jumpAbilityCooldown: 0,
+        crouchAbilityCooldown: 0,
+        raycastEnd: Vector(0, 0, 0),
+        hackedTimer: 0,
+        stunned: false,
+    };
+    ApplyBossStats();
+    sigmaData = {
+        throttleXYZ: Vector(0, 0, 0),
+        kineticGraspID: 0,
+        kineticGraspScale: 0,
+        kineticGraspColor: null,
+        kineticGraspVictims: null,
+        kineticGraspVictimGravity: 0,
+        kineticGraspVictimCoil: null,
+        damageMitigated: 0,
+    };
+    bossStats.bossInfo[0] = "Boss can fly. Accretion is slow but does lots of damage.";
+    bossStats.bossInfo[1] = "Kinetic Grasp turns Sigma into a black hole.";
+}
+
+rule: 'Sigma Flight Controls'
+Event.OngoingPlayer
+Team.Team2
+Player.Slot0
+if (HasSpawned())
+if (HeroOf() == Hero.Sigma)
+{
+    #Records 3D input for Sigma's flight movement. Additionally, it allows the use of Vertical Facing Angle to allow Sigma to fly towards and away from where he's facing. 
+    sigmaData.throttleXYZ = Vector(XOf(ThrottleOf()), Max((IsButtonHeld(EventPlayer(), Button.Jump)), (-VerticalFacingAngleOf()/89) * ZOf(ThrottleOf())) + (-VerticalFacingAngleOf()/89) * ZOf(ThrottleOf()), ZOf(ThrottleOf()));
+    MinWait();
+    LoopIf(HeroOf() == Hero.Sigma);
+}
+
+rule: 'Sigma Flight'
+Event.OngoingPlayer
+Team.Team2
+Player.Sigma
+if (!bossStats.stunned)
+if (sigmaData.throttleXYZ != Vector(0, 0, 0))
+if (IsInAir())
+if (!IsButtonHeld(EventPlayer(), Button.Crouch))
+if (!IsUsingUltimate())
+{
+    #Allows Sigma to fly using the control inputs from the previous rule. Holding Crouch re-enables gravity for Sigma while held.
+    ApplyImpulse(EventPlayer(), sigmaData.throttleXYZ, bossStats.moveSpeed/400, Relative.ToPlayer, ContraryMotion.Incorporate);
+    MinWait();
+    LoopIfConditionIsTrue();
+}
+
+rule: 'Sigma Grounded'
+Event.OngoingPlayer
+Team.Team2
+Player.Sigma
+if (AltitudeOf() < 0.5 || bossStats.stunned || IsButtonHeld(EventPlayer(), Button.Crouch) || IsUsingUltimate())
+{
+    #While on the ground, stunned, or is holding crouch: set gravity and movement speed to normal. This also will enable regular controls during Ultimate.
+    SetMoveSpeed(EventPlayer(), bossStats.moveSpeed);
+    SetGravity(EventPlayer(), bossStats.gravity);
+    #Is In Air is needed in order to detect if the player is standing on a moving object or not. Altitude Of is needed as well to avoid infinite looping between Sigma Grounded and Sigma Flight rules when jumping.
+    WaitUntil(!bossStats.stunned && !IsButtonHeld(EventPlayer(), Button.Crouch) && IsInAir(EventPlayer()) && AltitudeOf(EventPlayer()) >= 0.5 || IsUsingUltimate(), 999999);
+    WaitUntil(!IsUsingUltimate(), 999999);
+    SetMoveSpeed(EventPlayer(), 0);
+    SetGravity(EventPlayer(), 0);
+}
+
+rule: 'Sigma Slow Accretion'
+Event.OngoingPlayer
+Team.Team2
+Player.Sigma
+if (IsUsingAbility2())
+{
+    #Throws Accretion at slow speed and low gravity but deals double damage than normal Accretion.
+    SetProjectileSpeed(EventPlayer(), 30);
+    SetProjectileGravity(EventPlayer(), 15);
+    SetDamageDealt(EventPlayer(), (bossStats.damageDealt*2));
+    WaitUntil(!IsUsingAbility2(), 999999);
+    MinWait();
+    SetProjectileSpeed(EventPlayer(), 100);
+    SetProjectileGravity(EventPlayer(), 100);
+    SetDamageDealt(EventPlayer(), (bossStats.damageDealt));
+}
+
+rule: 'Sigma Black Hole Grasp Animation'
+Event.OngoingPlayer
+Team.Team2
+Player.Sigma
+if (IsUsingAbility1())
+{
+    #The visual effects of the black hole and the scale of its hitbox.
+    #Sets color of Black Hole Grasp to black.
+    sigmaData.kineticGraspColor = Color.Black;
+    #Creates the black hole effect for Sigma. Size is dependent on 'sigmadata_kineticGraspScale'.
+    CreateEffect(AllPlayers(Team.All), Effect.Sphere, sigmaData.kineticGraspColor, PositionOf() + Up(), sigmaData.kineticGraspScale, EffectRev.PositionRadiusAndColor);
+    sigmaData.kineticGraspID[0] = LastCreatedEntity();
+    #Starting scale of the Black Hole.
+    if (IsUsingAbility1() && sigmaData.kineticGraspScale == 0)
+    {
+        sigmaData.kineticGraspScale = 0.5;
+        PlayEffect(AllPlayers(Team.All), PlayEffect.MoiraFadeDisappearEffect, Color.Black, PositionOf() + Up(), 3);
+        //CreateEffect(EventPlayer(), Effect.Sphere, Color.Black, EventPlayer(), sigmaData.kineticGraspScale, EffectRev.PositionAndRadius);
+        //sigmaData.kineticGraspID[1] = LastCreatedEntity();
+    }
+    #Quickly scales the black hole to 2 meters in size.
+    while (IsUsingAbility1() && sigmaData.kineticGraspScale < 2)
+    {
+        sigmaData.kineticGraspScale += 0.25;
+        MinWait();
+    }
+    #After scaling to 2 meters, continue to scale slowly until ability ends.
+    while (IsUsingAbility1() && sigmaData.kineticGraspScale >= 2)
+    {
+        sigmaData.kineticGraspScale += 0.05;
+        MinWait();
+    }
+    WaitUntil(!IsUsingAbility1(), 999999);
+    #Make the Black hole turn into Sigma's Team Color before imploding.
+    sigmaData.kineticGraspColor = Color.Team2;
+    #Explosion effect at Sigma's position.
+    PlayEffect(AllPlayers(Team.All), PlayEffect.ZaryaParticleCannonExplosionEffect, Color.Team2, PositionOf() + Up(), sigmaData.kineticGraspScale);    
+    PlayEffect(AllPlayers(Team.All), PlayEffect.SombraEmpExplosionSound, Color.Black, PositionOf() + Up(), 80);    
+    #Quickly implodes the balack hole.
+    while (!IsUsingAbility1() && sigmaData.kineticGraspScale > 0)
+    {
+        sigmaData.kineticGraspScale -= 0.5;
+        MinWait();
+    }
+    WaitUntil(sigmaData.kineticGraspScale <= 0, 999999);
+    DestroyEffect(sigmaData.kineticGraspID[0]);
+    sigmaData.kineticGraspScale = 0;
+    sigmaData.kineticGraspID = 0;
+}
+
+rule: 'Sigma Black Hole Grasp Damage'
+Event.OngoingPlayer
+Team.Team2
+Player.Sigma
+if (IsUsingAbility1())
+{
+    #Applies damage and zero grav to enemies inside of the black hole. (Please remember to remove cleansed heroes and Orisa using Fortify from array.)
+    sigmaData.kineticGraspVictims = (PlayersWithinRadius(PositionOf(EventPlayer()), sigmaData.kineticGraspScale, Team.Team1, RadiusLOS.Off));
+    Damage(sigmaData.kineticGraspVictims, EventPlayer(), 0.1);
+    SetEnvironmentCreditPlayer(sigmaData.kineticGraspVictims, EventPlayer());
+    if (!IsButtonHeld(EventPlayer(), Button.Crouch))
+    {
+        SetGravity(sigmaData.kineticGraspVictims, 0);
+    }
+    else if (IsButtonHeld(EventPlayer(), Button.Crouch))
+    {
+        SetGravity(sigmaData.kineticGraspVictims, bossStats.gravity);
+    }
+    SetMoveSpeed(sigmaData.kineticGraspVictims, 0);
+    SetGravity(RemoveFromArray(AllPlayers(Team.Team1), sigmaData.kineticGraspVictims), 100);
+    SetMoveSpeed(RemoveFromArray(AllPlayers(Team.Team1), sigmaData.kineticGraspVictims), 100);    
+    #Create a beam effect between Sigma and his victims.
+    for (index = 0; sigmaData.kineticGraspVictims; 1)
+    {
+        CreateBeamEffect(AllPlayers(Team.All), BeamType.MoiraGraspConnectedBeam, PositionOf(EventPlayer()), PositionOf(sigmaData.kineticGraspVictims[index]), Color.Team2, EffectRev.PositionAndRadius);
+        sigmaData.kineticGraspVictimCoil[index] = LastCreatedEntity();
+        ApplyImpulse(sigmaData.kineticGraspVictims[index], DirectionTowards(sigmaData.kineticGraspVictims[index], WorldVectorOf(Forward(), EventPlayer(), LocalVector.RotationAndTranslation)), 1, Relative.ToWorld, ContraryMotion.Incorporate);
+    }
+    #Force victims to move in the same way as Sigma.
+    if (sigmaData.throttleXYZ != Vector(0, 0, 0))
+    {
+        ApplyImpulse(sigmaData.kineticGraspVictims, WorldVectorOf(sigmaData.throttleXYZ, EventPlayer(), LocalVector.Rotation), bossStats.moveSpeed/400, Relative.ToWorld, ContraryMotion.Incorporate);
+    }
+    MinWait();
+    LoopIfConditionIsTrue();
+    for (index = 0; CountOf(AllPlayers(Team.Team1)); 1)
+    {
+        DestroyEffect(index);
+    }
+    if (!bossStats.stunned)
+    {
+        sigmaData.kineticGraspVictimGravity = 0;
+        Damage(sigmaData.kineticGraspVictims, EventPlayer(), 20);
+    }
+    if (sigmaData.kineticGraspVictimGravity < 100 && !bossStats.stunned)
+    {
+        Wait(1);
+        SetGravity(sigmaData.kineticGraspVictims, sigmaData.kineticGraspVictimGravity);
+        SetMoveSpeed(sigmaData.kineticGraspVictims, sigmaData.kineticGraspVictimGravity);
+        sigmaData.kineticGraspVictimGravity += 2;
+        Wait(0.02);
+        LoopIf(sigmaData.kineticGraspVictimGravity < 100);
+        RemoveFromArray(sigmaData.kineticGraspVictims, AllPlayers(Team.All));
+        Abort();
+    }
+    SetGravity(AllPlayers(Team.Team1), 100);
+    SetMoveSpeed(AllPlayers(Team.Team1), 100);
+    RemoveFromArray(sigmaData.kineticGraspVictims, AllPlayers(Team.All));
+}

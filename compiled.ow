@@ -1,15 +1,192 @@
+settings
+{
+    lobby
+    {
+        Team Balancing: After A Mirror Match
+        Swap Teams After Match: Yes
+        Max Team 1 Players: 5
+        Max Team 2 Players: 1
+        Max Spectators: 12
+        Match Voice Chat: Enabled
+    }
+    modes
+    {
+        General
+        {
+            Skins: Off
+            Limit Roles: 2 Of Each Role Per Team
+            Tank Role Passive Health Bonus: Disabled
+        }
+        Control
+        {
+            Competitive Rules: On
+        }
+        Escort
+        {
+            Competitive Rules: On
+        }
+        Hybrid
+        {
+            Competitive Rules: On
+        }
+        disabled Push
+    }
+    heroes
+    {
+        Team 1
+        {
+
+            disabled heroes
+            {
+                Sombra
+                Orisa
+            }
+        }
+        Team 2
+        {
+
+            disabled heroes
+            {
+                Junker Queen
+                Orisa
+                Ramattra
+                Roadhog
+                Winston
+                Wrecking Ball
+                Zarya
+                Ashe
+                Bastion
+                Cassidy
+                Echo
+                Genji
+                Hanzo
+                Junkrat
+                Mei
+                Pharah
+                Reaper
+                Sojourn
+                Soldier: 76
+                Sombra
+                Symmetra
+                Torbjörn
+                Tracer
+                Widowmaker
+                Ana
+                Baptiste
+                Brigitte
+                Lifeweaver
+                Lúcio
+                Mercy
+                Moira
+                Zenyatta
+            }
+        }
+    }
+    extensions
+    {
+        Buff and Debuff Sounds
+        Explosion Sounds
+        Beam Effects
+        Beam Sounds
+        Buff Status Effects
+        Debuff Status Effects
+        Energy Explosion Effects
+        Kinetic Explosion Effects
+        Projectiles
+        Play More Effects
+    }
+}
+
 variables
 {
+    global:
+        0: botNames
+        1: botNamesCurrent
+        2: team1ZenDiscordOrbEnabled
+        3: team1ZenDamageBoost
+        4: payloadPosition
+        5: payloadRingID
     player:
-        0: bossStats_damageDealt
-        1: bossStats_damageReceived
-        2: bossStats_healingDealt
-        3: bossStats_healingReceived
-        4: bossStats_health
-        5: bossStats_jumpSpeed
-        6: bossStats_gravity
-        7: bossStats_moveSpeed
-        8: bossStats_projectileSpeed
+        0: bossStats_bossInfo
+        1: bossStats_bossInfoStringID
+        2: bossStats_bossInfoToggle
+        3: bossStats_currentBoss
+        4: bossStats_damageDealt
+        5: bossStats_damageReceived
+        6: bossStats_healingDealt
+        7: bossStats_healingReceived
+        8: bossStats_health
+        9: bossStats_jumpSpeed
+        10: bossStats_gravity
+        11: bossStats_moveSpeed
+        12: bossStats_projectileSpeed
+        13: bossStats_scale
+        14: bossStats_voiceScale
+        15: bossStats_secondaryCooldown
+        16: bossStats_ability1Cooldown
+        17: bossStats_ability2Cooldown
+        18: bossStats_jumpAbilityCooldown
+        19: bossStats_crouchAbilityCooldown
+        20: bossStats_hackedTimer
+        21: bossStats_stunned
+        22: bossStats_raycastEnd
+        23: playerSlot
+        24: height
+        25: index
+        26: bossUltimateGlow
+        27: team1ZenDamageBoostEffectID
+        28: cleansed
+        29: zBubble
+        30: SupportPassiveTimer
+        31: doomfistData_doomTimeDamageBlock
+        32: doomfistData_doomTimeDamageBlo_0
+        33: doomfistData_doomTimeOn
+        34: doomfistData_doomTimeTimer
+        35: doomfistData_doomTimeTimerID
+        36: doomfistData_doomTimeColorID
+        37: dvaData_dvaMissileCooldown
+        38: dvaData_dvaMissileTextID
+        39: dvaData_dvaMissileTarget
+        40: dvaData_dvaMissileReticle
+        41: dvaData_dvaMissileAmmo
+        42: dvaData_dvaMatrixHeroStat
+        43: dvaData_dvaIsDemeched
+        44: dvaData_dvaDemechedEffectID
+        45: kirikoData_kiriDummyBotID
+        46: kirikoData_kiriCloneEffectID
+        47: kirikoData_kiriCloneCooldown
+        48: kirikoData_kiriCloneTime
+        49: kirikoData_kiriCloneTextID
+        50: kirikoData_kiriCloneInputID
+        51: kirikoData_kiriClonePrevPosition
+        52: kirikoData_kiriCloneHealMode
+        53: kirikoData_kiriCloneRange
+        54: kirikoData_kiriCloneOverhealth
+        55: kirikoData_kiriCloneOverhealthID
+        56: reindata_reinBarrierTimer
+        57: reindata_reinBarrierBarID
+        58: reindata_reinBarrierRegen
+        59: reindata_reinBarrierEffectID
+        60: reindata_reinBurnDamageDealt
+        61: reindata_reinBurnDamageID
+        62: reindata_reinBurnEffectID
+        63: sigmaData_throttleXYZ
+        64: sigmaData_kineticGraspScale
+        65: sigmaData_kineticGraspID
+        66: sigmaData_kineticGraspColor
+        67: sigmaData_kineticGraspVictims
+        68: sigmaData_kineticGraspVictimGrav
+        69: sigmaData_kineticGraspVictimCoil
+        70: sigmaData_damageMitigated
+        71: Center
+        72: Radius
+        73: Team
+        74: Ignore
+        75: playersWithinRange
+        76: closestPlayer
+        77: bestDistance
+        78: player
+        79: distance
 }
 
 subroutines
@@ -27,9 +204,13 @@ rule("Initial Player")
         All;
     }
 
-    // Action count: 9
+    // Action count: 63
     actions
     {
+        Set Player Variable(Event Player, bossStats_bossInfo, Custom String("Enter Information on Boss here."));
+        Set Player Variable(Event Player, bossStats_bossInfoStringID, 0);
+        Set Player Variable(Event Player, bossStats_bossInfoToggle, True);
+        Set Player Variable(Event Player, bossStats_currentBoss, Null);
         Set Player Variable(Event Player, bossStats_damageDealt, 0);
         Set Player Variable(Event Player, bossStats_damageReceived, 0);
         Set Player Variable(Event Player, bossStats_healingDealt, 0);
@@ -39,6 +220,985 @@ rule("Initial Player")
         Set Player Variable(Event Player, bossStats_gravity, 0);
         Set Player Variable(Event Player, bossStats_moveSpeed, 0);
         Set Player Variable(Event Player, bossStats_projectileSpeed, 0);
+        Set Player Variable(Event Player, bossStats_scale, 0);
+        Set Player Variable(Event Player, bossStats_voiceScale, 0);
+        Set Player Variable(Event Player, bossStats_secondaryCooldown, 0);
+        Set Player Variable(Event Player, bossStats_ability1Cooldown, 0);
+        Set Player Variable(Event Player, bossStats_ability2Cooldown, 0);
+        Set Player Variable(Event Player, bossStats_jumpAbilityCooldown, 0);
+        Set Player Variable(Event Player, bossStats_crouchAbilityCooldown, 0);
+        Set Player Variable(Event Player, bossStats_hackedTimer, 0);
+        Set Player Variable(Event Player, bossStats_stunned, 0);
+        Set Player Variable(Event Player, bossStats_raycastEnd, Subtract(Left, Left));
+        Set Player Variable(Event Player, doomfistData_doomTimeDamageBlock, 0);
+        Set Player Variable(Event Player, doomfistData_doomTimeDamageBlo_0, 0);
+        Set Player Variable(Event Player, doomfistData_doomTimeOn, 0);
+        Set Player Variable(Event Player, doomfistData_doomTimeTimer, 0);
+        Set Player Variable(Event Player, doomfistData_doomTimeTimerID, 0);
+        Set Player Variable(Event Player, doomfistData_doomTimeColorID, 0);
+        Set Player Variable(Event Player, dvaData_dvaMissileCooldown, 0);
+        Set Player Variable(Event Player, dvaData_dvaMissileTextID, 0);
+        Set Player Variable(Event Player, dvaData_dvaMissileTarget, Null);
+        Set Player Variable(Event Player, dvaData_dvaMissileReticle, 0);
+        Set Player Variable(Event Player, dvaData_dvaMissileAmmo, 0);
+        Set Player Variable(Event Player, dvaData_dvaMatrixHeroStat, 0);
+        Set Player Variable(Event Player, dvaData_dvaIsDemeched, False);
+        Set Player Variable(Event Player, dvaData_dvaDemechedEffectID, 0);
+        Set Player Variable(Event Player, kirikoData_kiriDummyBotID, 0);
+        Set Player Variable(Event Player, kirikoData_kiriCloneEffectID, 0);
+        Set Player Variable(Event Player, kirikoData_kiriCloneCooldown, 0);
+        Set Player Variable(Event Player, kirikoData_kiriCloneTime, 0);
+        Set Player Variable(Event Player, kirikoData_kiriCloneTextID, 0);
+        Set Player Variable(Event Player, kirikoData_kiriCloneInputID, 0);
+        Set Player Variable(Event Player, kirikoData_kiriClonePrevPosition, Subtract(Left, Left));
+        Set Player Variable(Event Player, kirikoData_kiriCloneHealMode, False);
+        Set Player Variable(Event Player, kirikoData_kiriCloneRange, 0);
+        Set Player Variable(Event Player, kirikoData_kiriCloneOverhealth, 0);
+        Set Player Variable(Event Player, kirikoData_kiriCloneOverhealthID, 0);
+        Set Player Variable(Event Player, reindata_reinBarrierTimer, 0);
+        Set Player Variable(Event Player, reindata_reinBarrierBarID, 0);
+        Set Player Variable(Event Player, reindata_reinBarrierRegen, False);
+        Set Player Variable(Event Player, reindata_reinBarrierEffectID, 0);
+        Set Player Variable(Event Player, reindata_reinBurnDamageDealt, 0);
+        Set Player Variable(Event Player, reindata_reinBurnDamageID, 0);
+        Set Player Variable(Event Player, reindata_reinBurnEffectID, 0);
+        Set Player Variable(Event Player, sigmaData_throttleXYZ, Subtract(Left, Left));
+        Set Player Variable(Event Player, sigmaData_kineticGraspScale, 0);
+        Set Player Variable(Event Player, sigmaData_kineticGraspID, 0);
+        Set Player Variable(Event Player, sigmaData_kineticGraspColor, Null);
+        Set Player Variable(Event Player, sigmaData_kineticGraspVictims, Null);
+        Set Player Variable(Event Player, sigmaData_kineticGraspVictimGrav, 0);
+        Set Player Variable(Event Player, sigmaData_kineticGraspVictimCoil, 0);
+        Set Player Variable(Event Player, sigmaData_damageMitigated, 0);
+    }
+}
+
+disabled rule("Debug HUD")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        All;
+        All;
+    }
+
+    // Action count: 10
+    actions
+    {
+        Create HUD Text(Event Player, Custom String("{0}{1}'s Player Data", Hero Icon String(Hero Of(Event Player)), Local Player), Custom String("{0}, {1}, Slot {2}", Hero Of(Event Player), Team Of(Event Player), Slot Of(Event Player)), Null, Left, 0, Color(White), Color(White), Color(White), Visible To And String, Visible Always);
+        Create HUD Text(Event Player, Custom String("Primary {0}", Ability Icon String(Hero Of(Event Player), Button(Primary Fire))), Null, Custom String("={0}{1}{2}", Is Firing Primary(Event Player), If-Then-Else(Compare(Max Ammo(Event Player, 0), >, 0), Custom String("Ammo={0}/{1}", Ammo(Event Player, 0), Max Ammo(Event Player, 0)), Custom String("")), Custom String("{0}{1}{2}", If-Then-Else(Compare(Ability Charge(Event Player, Button(Primary Fire)), >, 0), Custom String("Charges={0}", Ability Charge(Event Player, Button(Primary Fire))), Custom String("")), If-Then-Else(Compare(Ability Resource(Event Player, Button(Primary Fire)), >, 0), Custom String("Resource={0}", Ability Resource(Event Player, Button(Primary Fire))), Custom String("")), Custom String("{0}{1}", If-Then-Else(Compare(Max Ammo(Event Player, 0), >, 0), Custom String("Reloading={0}", Is Reloading(Event Player)), Custom String("")), Custom String("Is Held={0}", Is Button Held(Event Player, Button(Primary Fire)))))), Left, 1, Color(White), Color(White), Color(White), Visible To And String, Visible Always);
+        Create HUD Text(Event Player, Custom String("Secondary {0}", Ability Icon String(Hero Of(Event Player), Button(Secondary Fire))), Null, Custom String("={0}{1}{2}", Is Firing Secondary(Event Player), If-Then-Else(Compare(Max Ammo(Event Player, 1), >, 0), Custom String("Ammo={0}/{1}", Ammo(Event Player, 1), Max Ammo(Event Player, 1)), Custom String("")), Custom String("{0}{1}{2}", If-Then-Else(Compare(Ability Charge(Event Player, Button(Secondary Fire)), >, 0), Custom String("Charges={0}", Ability Charge(Event Player, Button(Secondary Fire))), Custom String("")), If-Then-Else(Compare(Ability Resource(Event Player, Button(Secondary Fire)), >, 0), Custom String("Resource={0}", Ability Resource(Event Player, Button(Secondary Fire))), Custom String("")), Custom String("Is Held={0}", Is Button Held(Event Player, Button(Secondary Fire))))), Left, 2, Color(White), Color(White), Color(White), Visible To And String, Visible Always);
+        Create HUD Text(Event Player, Custom String("Ability 1 {0}", Ability Icon String(Hero Of(Event Player), Button(Ability 1))), Null, Custom String("={0}", Is Using Ability 1(Event Player)), Left, 3, Color(White), Color(White), Color(White), Visible To And String, Visible Always);
+        Create HUD Text(Event Player, Custom String("Ability 2 {0}", Ability Icon String(Hero Of(Event Player), Button(Ability 2))), Null, Custom String("={0}", Is Using Ability 2(Event Player)), Left, 4, Color(White), Color(White), Color(White), Visible To And String, Visible Always);
+        Create HUD Text(Event Player, Custom String("Ultimate {0}", Ability Icon String(Hero Of(Event Player), Button(Ultimate))), Null, Custom String("={0}{1}{2}", Is Using Ultimate(Event Player), Custom String("Ultimate Charge={0}%", Ultimate Charge Percent(Event Player)), Custom String("{0}{1}{2}", If-Then-Else(Compare(Ability Charge(Event Player, Button(Ultimate)), >, 0), Custom String("Charges={0}", Ability Charge(Event Player, Button(Ultimate))), Custom String("")), If-Then-Else(Compare(Ability Resource(Event Player, Button(Ultimate)), >, 0), Custom String("Resource={0}", Ability Resource(Event Player, Button(Ultimate))), Custom String("")), Custom String("Is Held={0}", Is Button Held(Event Player, Button(Ultimate))))), Left, 5, Color(White), Color(White), Color(White), Visible To And String, Visible Always);
+        Create HUD Text(Event Player, Custom String("Health = {0}/{1} Is Alive = {2}", Max Health(Event Player), Health(Event Player), Is Alive(Event Player)), Null, Null, Left, 6, Color(White), Color(White), Color(White), Visible To And String, Default Visibility);
+        Create HUD Text(Event Player, Custom String("Height = {0} Altitude = {1}", Player Variable(Event Player, height), Altitude Of(Event Player)), Null, Null, Left, 7, Color(White), Color(White), Color(White), Visible To And String, Default Visibility);
+        Create HUD Text(Event Player, Custom String("Is In Alt Form = {0}", Is In Alternate Form(Event Player)), Null, Null, Left, 7, Color(White), Color(White), Color(White), Visible To And String, Default Visibility);
+        Create HUD Text(Event Player, Custom String("HorzFacing = {0} VertFacing = {1}", Horizontal Facing Angle Of(Event Player), Vertical Facing Angle Of(Event Player)), Null, Null, Left, 7, Color(White), Color(White), Color(White), Visible To And String, Default Visibility);
+    }
+}
+
+rule("Hacked Timer")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        All;
+    }
+
+    conditions
+    {
+        Has Status(Event Player, Hacked) == True;
+    }
+
+    // Action count: 4
+    actions
+    {
+        "Used to count how long player has been hacked for."
+        Wait(0.25, Ignore Condition);
+        Modify Player Variable(Event Player, bossStats_hackedTimer, Add, 0.25);
+        Loop If Condition Is True;
+        Set Player Variable(Event Player, bossStats_hackedTimer, 0);
+    }
+}
+
+rule("Stunned")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        All;
+    }
+
+    conditions
+    {
+        Or(Or(Or(Or(Or(Not(Is Alive(Event Player)), And(Has Status(Event Player, Hacked), Compare(Player Variable(Event Player, bossStats_hackedTimer), <=, 1.5))), Has Status(Event Player, Asleep)), Has Status(Event Player, Frozen)), Has Status(Event Player, Knocked Down)), Has Status(Event Player, Stunned)) == True;
+    }
+
+    // Action count: 4
+    actions
+    {
+        Set Player Variable(Event Player, bossStats_stunned, True);
+        Wait(0.001, Ignore Condition);
+        Loop If Condition Is True;
+        Set Player Variable(Event Player, bossStats_stunned, False);
+    }
+}
+
+rule("Get Height")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        All;
+        All;
+    }
+
+    conditions
+    {
+        Is Alive(Event Player) == True;
+    }
+
+    // Action count: 3
+    actions
+    {
+        Wait(0.016, Ignore Condition);
+        Set Player Variable(Event Player, height, Distance Between(Vector(Empty Array, Y Component Of(Eye Position(Event Player)), Empty Array), Vector(Empty Array, Y Component Of(Position Of(Event Player)), Empty Array)));
+        Loop;
+    }
+}
+
+rule("Raycast From Players")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        All;
+        All;
+    }
+
+    conditions
+    {
+        True == True;
+    }
+
+    // Action count: 3
+    actions
+    {
+        Wait(0.016, Ignore Condition);
+        Set Player Variable(Event Player, bossStats_raycastEnd, Update Every Frame(Add(Eye Position(Event Player), Multiply(Facing Direction Of(Event Player), 1000))));
+        Loop;
+    }
+}
+
+disabled rule("Boss Info Hero Swap")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Slot0;
+    }
+
+    conditions
+    {
+        Hero Of(Event Player) != Player Variable(Event Player, bossStats_currentBoss);
+        Player Variable(Event Player, bossStats_currentBoss) != Null;
+    }
+
+    // Action count: 6
+    actions
+    {
+        Destroy All HUD Text;
+        Set Player Variable(All Players(All Teams), bossStats_bossInfoToggle, False);
+        Set Player Variable(All Players(All Teams), bossStats_bossInfoToggle, True);
+        Create HUD Text(Event Player, Hero Icon String(Hero Of(Players In Slot(0, Team 2))), Player Variable(Players In Slot(0, Team 2), bossStats_bossInfo), Custom String("Press Crouch + Melee to toggle Boss Info menu."), Left, 0, Color(White), Color(White), Color(White), Sort Order And String, Default Visibility);
+        Set Player Variable(Event Player, bossStats_bossInfoStringID, Last Text ID);
+        Set Player Variable(Event Player, bossStats_currentBoss, Hero Of(Event Player));
+    }
+}
+
+disabled rule("Boss Info String Create")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        All;
+        All;
+    }
+
+    conditions
+    {
+        Player Variable(Event Player, bossStats_bossInfoToggle) == True;
+    }
+
+    // Action count: 2
+    actions
+    {
+        Create HUD Text(Event Player, Hero Icon String(Hero Of(Players In Slot(0, Team 2))), Player Variable(Players In Slot(0, Team 2), bossStats_bossInfo), Custom String("Press Crouch + Melee to toggle Boss Info menu."), Left, 0, Color(White), Color(White), Color(White), Sort Order And String, Default Visibility);
+        Set Player Variable(Event Player, bossStats_bossInfoStringID, Last Text ID);
+    }
+}
+
+disabled rule("Boss Info String Delete")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        All;
+        All;
+    }
+
+    conditions
+    {
+        Player Variable(Event Player, bossStats_bossInfoToggle) == False;
+    }
+
+    // Action count: 2
+    actions
+    {
+        Destroy HUD Text(Player Variable(Event Player, bossStats_bossInfoStringID));
+        Set Player Variable(Event Player, bossStats_bossInfoStringID, 0);
+    }
+}
+
+disabled rule("Boss Info Team Swap")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        All;
+        All;
+    }
+
+    conditions
+    {
+        Or(Compare(Player Variable(Players In Slot(0, Team 2), bossStats_currentBoss), ==, Null), Compare(Number Of Players(Team 2), <=, 0)) == True;
+    }
+
+    // Action count: 3
+    actions
+    {
+        Set Player Variable(All Players(All Teams), bossStats_bossInfoToggle, False);
+        Set Player Variable(All Players(All Teams), bossStats_currentBoss, Null);
+        Destroy All HUD Text;
+    }
+}
+
+disabled rule("Manual Toggle Boss Info String")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        All;
+        All;
+    }
+
+    conditions
+    {
+        Is Button Held(Event Player, Button(Crouch)) == True;
+        Is Button Held(Event Player, Button(Melee)) == True;
+    }
+
+    // Action count: 8
+    actions
+    {
+        If(Compare(Player Variable(Event Player, bossStats_bossInfoToggle), ==, True));
+            Set Player Variable(Event Player, bossStats_bossInfoToggle, False);
+            Wait Until(Not(Is Button Held(Event Player, Button(Melee))), 99999);
+            Abort;
+        Else;
+            Set Player Variable(Event Player, bossStats_bossInfoToggle, True);
+            Wait Until(Not(Is Button Held(Event Player, Button(Melee))), 99999);
+        End;
+    }
+}
+
+rule("Boss Objective Contest")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Slot0;
+    }
+
+    conditions
+    {
+        Is On Objective(Event Player) == True;
+        Is Alive(Event Player) == True;
+    }
+
+    // Action count: 27
+    actions
+    {
+        If(Is On Objective(Event Player));
+            Create Dummy Bot(Hero Of(Event Player), Team 2, 4, World Vector Of(Vector(Empty Array, Empty Array, -0.5), Event Player, Rotation And Translation), Facing Direction Of(Event Player));
+            Create Dummy Bot(Hero Of(Event Player), Team 2, 5, World Vector Of(Vector(Empty Array, Empty Array, -0.5), Event Player, Rotation And Translation), Facing Direction Of(Event Player));
+            Start Forcing Player Position(Players In Slot(4, Team 2), World Vector Of(Vector(Empty Array, Empty Array, -0.5), Event Player, Rotation And Translation), True);
+            Start Forcing Player Position(Players In Slot(5, Team 2), World Vector Of(Vector(Empty Array, Empty Array, -0.5), Event Player, Rotation And Translation), True);
+            Start Modifying Hero Voice Lines(Players In Slot(4, Team 2), Player Variable(Event Player, bossStats_voiceScale), True);
+            Start Modifying Hero Voice Lines(Players In Slot(5, Team 2), Player Variable(Event Player, bossStats_voiceScale), True);
+            Start Facing(Players In Slot(5, Team 2), Facing Direction Of(Event Player), 9999, To World, Direction And Turn Rate);
+            Start Facing(Players In Slot(4, Team 2), Facing Direction Of(Event Player), 9999, To World, Direction And Turn Rate);
+            Set Global Variable At Index(botNamesCurrent, 0, Random Value In Array(Global Variable(botNames)));
+            Set Global Variable At Index(botNamesCurrent, 1, Random Value In Array(Remove From Array(Global Variable(botNames), First Of(Global Variable(botNamesCurrent)))));
+            While(Is On Objective(Event Player));
+                Wait(0.016, Ignore Condition);
+                Start Forcing Dummy Bot Name(Players In Slot(4, Team 2), First Of(Global Variable(botNamesCurrent)));
+                Start Forcing Dummy Bot Name(Players In Slot(5, Team 2), Value In Array(Global Variable(botNamesCurrent), 1));
+                Set Status(Players In Slot(4, Team 2), Null, Invincible, 9999);
+                Set Status(Players In Slot(5, Team 2), Null, Invincible, 9999);
+                Set Status(Players In Slot(4, Team 2), Null, Phased Out, 9999);
+                Set Status(Players In Slot(5, Team 2), Null, Phased Out, 9999);
+                Set Gravity(Players In Slot(4, Team 2), 0);
+                Set Gravity(Players In Slot(5, Team 2), 0);
+                Set Invisible(Players In Slot(4, Team 2), All);
+                Set Invisible(Players In Slot(5, Team 2), All);
+            End;
+            Destroy Dummy Bot(Team 2, 4);
+            Destroy Dummy Bot(Team 2, 5);
+        End;
+    }
+}
+
+rule("Fast Spawn for Boss")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Slot0;
+    }
+
+    conditions
+    {
+        Is Dead(Event Player) == True;
+    }
+
+    // Action count: 1
+    actions
+    {
+        Set Respawn Max Time(Event Player, 7.5);
+    }
+}
+
+rule("Slot Stat")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        All;
+        All;
+    }
+
+    // Action count: 1
+    actions
+    {
+        Set Player Variable(Event Player, playerSlot, Slot Of(Event Player));
+    }
+}
+
+rule("Boss Info")
+{
+
+    event
+    {
+        Ongoing - Global;
+    }
+
+    // Action count: 2
+    actions
+    {
+        Create HUD Text(Filtered Array(All Players(All Teams), Player Variable(Current Array Element, bossStats_bossInfoToggle)), Custom String("{0}", Hero Icon String(Hero Of(Players In Slot(0, Team 2)))), First Of(Player Variable(Players In Slot(0, Team 2), bossStats_bossInfo)), Value In Array(Player Variable(Players In Slot(0, Team 2), bossStats_bossInfo), 1), Left, 0, Color(White), Color(White), Color(White), Visible To And String, Visible Always);
+        Create HUD Text(Filtered Array(All Players(All Teams), Player Variable(Current Array Element, bossStats_bossInfoToggle)), Null, Null, Custom String("Press Crouch + Melee to toggle Boss Info menu."), Right, 1, Color(White), Color(White), Color(White), Visible To And String, Visible Always);
+    }
+}
+
+rule("Boss Info Toggle")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        All;
+    }
+
+    conditions
+    {
+        And(Is Button Held(Event Player, Button(Crouch)), Is Button Held(Event Player, Button(Melee))) == True;
+    }
+
+    // Action count: 5
+    actions
+    {
+        If(Player Variable(Event Player, bossStats_bossInfoToggle));
+            Set Player Variable(Event Player, bossStats_bossInfoToggle, False);
+        Else;
+            Set Player Variable(Event Player, bossStats_bossInfoToggle, True);
+        End;
+    }
+}
+
+rule("Boss Ultimate Glow")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Slot0;
+    }
+
+    conditions
+    {
+        Ultimate Charge Percent(Event Player) >= 100;
+    }
+
+    // Action count: 7
+    actions
+    {
+        Create Effect(Remove From Array(All Players(All Teams), Event Player), Winston Primal Rage Effect, Color(Team 2), Event Player, 1, Position And Radius);
+        Set Player Variable At Index(Event Player, bossUltimateGlow, 0, Last Created Entity);
+        Create Effect(Remove From Array(All Players(All Teams), Event Player), Reaper Wraith Form Effect, Color(Team 2), Event Player, 1, Position And Radius);
+        Set Player Variable At Index(Event Player, bossUltimateGlow, 1, Last Created Entity);
+        Wait Until(Compare(Ultimate Charge Percent(Event Player), <, 100), 999999);
+        Destroy Effect(First Of(Player Variable(Event Player, bossUltimateGlow)));
+        Destroy Effect(Value In Array(Player Variable(Event Player, bossUltimateGlow), 1));
+    }
+}
+
+rule("1st Team Balance Settings")
+{
+
+    event
+    {
+        Ongoing - Global;
+    }
+
+    // Action count: 2
+    actions
+    {
+        Set Global Variable(team1ZenDiscordOrbEnabled, Workshop Setting Toggle(Custom String("1st Team Balance"), Custom String("Zenyatta Discord Orb Enabled"), False, 1));
+        Set Global Variable(team1ZenDamageBoost, Workshop Setting Real(Custom String("1st Team Balance"), Custom String("Zenyatta Damage Boost"), 25, 0, 500, 2));
+    }
+}
+
+rule("Team 1 Zenyatta settings")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team1;
+        All;
+    }
+
+    conditions
+    {
+        Hero Of(Event Player) == Hero(Zenyatta);
+        Is Alive(Event Player) == True;
+    }
+
+    // Action count: 10
+    actions
+    {
+        Set Ability 2 Enabled(Event Player, Global Variable(team1ZenDiscordOrbEnabled));
+        Set Damage Dealt(Event Player, Add(Global Variable(team1ZenDamageBoost), 100));
+        If(Compare(Global Variable(team1ZenDamageBoost), >, 0));
+            Create Effect(All Players(All Teams), Mercy Damage Boosted Effect, Color(Team 1), Event Player, 1, Position And Radius);
+            Set Player Variable(Event Player, team1ZenDamageBoostEffectID, Last Created Entity);
+        End;
+        Wait Until(Or(Compare(Hero Of(Event Player), !=, Hero(Zenyatta)), Is Dead(Event Player)), 999999);
+        Set Ability 2 Enabled(Event Player, True);
+        Set Damage Dealt(Event Player, 100);
+        Destroy Effect(Player Variable(Event Player, team1ZenDamageBoostEffectID));
+    }
+}
+
+rule("Payload Position")
+{
+
+    event
+    {
+        Ongoing - Global;
+    }
+
+    // Action count: 3
+    actions
+    {
+        Wait(0.016, Ignore Condition);
+        Set Global Variable(payloadPosition, Update Every Frame(Payload Position));
+        Loop;
+    }
+}
+
+rule("Payload Ring")
+{
+
+    event
+    {
+        Ongoing - Global;
+    }
+
+    conditions
+    {
+        Or(And(Compare(Current Game Mode, ==, Game Mode(Hybrid)), Compare(Objective Index, >, 0)), Compare(Current Game Mode, ==, Game Mode(Escort))) == True;
+        Not(Is In Setup) == True;
+    }
+
+    // Action count: 7
+    actions
+    {
+        Create Effect(All Players(All Teams), Ring, Custom Color(255, 255, 255, 63.75), Add(Global Variable(payloadPosition), Up), 7.5, Visible To Position Radius and Color);
+        Set Global Variable At Index(payloadRingID, 0, Last Created Entity);
+        Create Effect(All Players(All Teams), Ring, Custom Color(255, 255, 255, 63.75), Add(Global Variable(payloadPosition), Down), 7.5, Visible To Position Radius and Color);
+        Set Global Variable At Index(payloadRingID, 1, Last Created Entity);
+        Wait Until(Compare(Is In Setup, ==, True), 999999);
+        Destroy Effect(First Of(Global Variable(payloadRingID)));
+        Destroy Effect(Value In Array(Global Variable(payloadRingID), 1));
+    }
+}
+
+rule("Defending Bosses Heal on Payload")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        All;
+    }
+
+    conditions
+    {
+        Or(And(Compare(Current Game Mode, ==, Game Mode(Hybrid)), Compare(Objective Index, >, 0)), Compare(Current Game Mode, ==, Game Mode(Escort))) == True;
+        Is On Objective(Event Player) == True;
+        Is Team On Defense(Team 2) == True;
+    }
+
+    // Action count: 3
+    actions
+    {
+        Start Heal Over Time(Event Player, Null, 1, 10);
+        Wait(1, Ignore Condition);
+        Loop If Condition Is True;
+    }
+}
+
+rule("Cleanse: Ability 1")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        All;
+        All;
+    }
+
+    conditions
+    {
+        Array Contains(Array(Hero(Reaper), Hero(Moira), Hero(Kiriko), Hero(Mei)), Hero Of(Event Player)) == True;
+        Is Using Ability 1(Event Player) == True;
+    }
+
+    // Action count: 3
+    actions
+    {
+        Set Player Variable(Event Player, cleansed, True);
+        Wait Until(Not(Is Using Ability 1(Event Player)), 999999);
+        Set Player Variable(Event Player, cleansed, False);
+    }
+}
+
+rule("Cleanse: Ability 2")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        All;
+        All;
+    }
+
+    conditions
+    {
+        Array Contains(Array(Hero(Reaper), Hero(Tracer)), Hero Of(Event Player)) == True;
+        Is Using Ability 2(Event Player) == True;
+    }
+
+    // Action count: 11
+    actions
+    {
+        If(Compare(Hero Of(Event Player), ==, Hero(Reaper)));
+            Wait(0.992, Ignore Condition);
+            Skip If(Not(Is Using Ability 2(Event Player)), 3);
+            Set Player Variable(Event Player, cleansed, True);
+            Wait(1.008, Ignore Condition);
+            Set Player Variable(Event Player, cleansed, False);
+        Else;
+            Set Player Variable(Event Player, cleansed, True);
+            Wait Until(Not(Is Using Ability 2(Event Player)), 999999);
+            Set Player Variable(Event Player, cleansed, False);
+        End;
+    }
+}
+
+rule("Cleanse: Doomfist Ultimate")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        All;
+        Doomfist;
+    }
+
+    conditions
+    {
+        Is Using Ultimate(Event Player) == True;
+    }
+
+    // Action count: 3
+    actions
+    {
+        Set Player Variable(Event Player, cleansed, True);
+        Wait(1, Ignore Condition);
+        Set Player Variable(Event Player, cleansed, False);
+    }
+}
+
+rule("Cleanse: Kiriko Suzu")
+{
+
+    event
+    {
+        Player Dealt Healing;
+        All;
+        Kiriko;
+    }
+
+    conditions
+    {
+        Event Ability == Button(Ability 2);
+    }
+
+    // Action count: 3
+    actions
+    {
+        Set Player Variable(Healee, cleansed, True);
+        Wait(0.85, Ignore Condition);
+        Set Player Variable(Healee, cleansed, False);
+    }
+}
+
+rule("Cleanse: Sombra")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        All;
+        Sombra;
+    }
+
+    conditions
+    {
+        Is Using Ability 2(Event Player) == True;
+    }
+
+    // Action count: 5
+    actions
+    {
+        Wait Until(Not(Is Using Ability 2(Event Player)), 999999);
+        Skip If(Not(Is Button Held(Event Player, Button(Ability 2))), 1);
+        Set Player Variable(Event Player, cleansed, True);
+        Wait(0.4, Ignore Condition);
+        Set Player Variable(Event Player, cleansed, False);
+    }
+}
+
+rule("Cleanse: Zarya Ability 1")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        All;
+        Zarya;
+    }
+
+    conditions
+    {
+        Is Using Ability 1(Event Player) == True;
+    }
+
+    // Action count: 3
+    actions
+    {
+        Set Player Variable(Event Player, cleansed, True);
+        Wait Until(Not(Is Using Ability 1(Event Player)), 999999);
+        Set Player Variable(Event Player, cleansed, False);
+    }
+}
+
+rule("Cleanse: Zarya Ability 2")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        All;
+        Zarya;
+    }
+
+    conditions
+    {
+        Is Using Ability 2(Event Player) == True;
+    }
+
+    // Action count: 5
+    actions
+    {
+        Set Player Variable(Event Player, zBubble, Player Closest To Reticle(Event Player, Team Of(Event Player)));
+        Set Player Variable(Player Variable(Event Player, zBubble), cleansed, True);
+        Wait Until(Not(Is Using Ability 2(Event Player)), 999999);
+        Set Player Variable(Player Variable(Event Player, zBubble), cleansed, False);
+        Set Player Variable(Event Player, zBubble, Null);
+    }
+}
+
+rule("Autobalance")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        All;
+    }
+
+    conditions
+    {
+        Slot Of(Event Player) != 0;
+        Is Dummy Bot(Event Player) != True;
+    }
+
+    // Action count: 9
+    actions
+    {
+        If(Compare(Players In Slot(0, Team 2), ==, 0));
+            Move Player To Team(Event Player, Team 2, 0);
+            Else If(Compare(Number Of Players(Team 1), <, Number Of Slots(Team 1)));
+            Move Player To Team(Event Player, Team 1, -1);
+        Else;
+            Remove Player(Event Player);
+        End;
+        Wait(0.1, Ignore Condition);
+        Loop If Condition Is True;
+    }
+}
+
+rule("Autostart")
+{
+
+    event
+    {
+        Ongoing - Global;
+    }
+
+    conditions
+    {
+        Is Game In Progress != True;
+        Compare(Number Of Players(Team 1), ==, Number Of Slots(Team 1)) == True;
+        Players In Slot(0, Team 2) != 0;
+    }
+
+    // Action count: 1
+    actions
+    {
+        Start Game Mode;
+    }
+}
+
+rule("Quick Setup")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        All;
+        All;
+    }
+
+    conditions
+    {
+        Is Assembling Heroes == True;
+    }
+
+    // Action count: 13
+    actions
+    {
+        Set Match Time(5);
+        Wait Until(Is In Setup, 99999);
+        If(Compare(Is Team On Defense(Team Of(Event Player)), ==, True));
+            Set Match Time(20);
+            While(Is In Setup);
+                Wait(0.016, Ignore Condition);
+                Set Move Speed(Event Player, 250);
+            End;
+            Set Move Speed(All Players(All Teams), 100);
+            Set Move Speed(Players In Slot(0, Team 2), Player Variable(Players In Slot(0, Team 2), bossStats_moveSpeed));
+            Else If(Is True For All(Array(Is Team On Offense(Team 1), Is Team On Offense(Team 2)), True));
+            Set Match Time(10);
+        End;
+    }
+}
+
+rule("If Player Takes Damage, Set SupportPassiveTimer to 2")
+{
+
+    event
+    {
+        Player took damage;
+        Team2;
+        All;
+    }
+
+    conditions
+    {
+        Array Contains(All Support Heroes, Hero Of(Event Player)) == True;
+        Hero Of(Event Player) != Hero(Zenyatta);
+    }
+
+    // Action count: 2
+    actions
+    {
+        Wait(0.016, Abort When False);
+        Set Player Variable(Event Player, SupportPassiveTimer, 2);
+    }
+}
+
+rule("Support Passive Disabled")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        All;
+    }
+
+    conditions
+    {
+        Player Variable(Event Player, SupportPassiveTimer) == 1;
+    }
+
+    // Action count: 4
+    actions
+    {
+        Wait(1.3, Abort When False);
+        Damage(Event Player, Null, Divide(100, Player Variable(Event Player, bossStats_damageReceived)));
+        Heal(Event Player, Null, Divide(100, Player Variable(Event Player, bossStats_healingReceived)));
+        Set Player Variable(Event Player, SupportPassiveTimer, 2);
+    }
+}
+
+rule("If Support Passive Timer = 2, set to 1")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        All;
+    }
+
+    conditions
+    {
+        Player Variable(Event Player, SupportPassiveTimer) == 2;
+    }
+
+    // Action count: 2
+    actions
+    {
+        Wait(0.1, Abort When False);
+        Set Player Variable(Event Player, SupportPassiveTimer, 1);
+    }
+}
+
+rule("If full health, stop timer")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        All;
+    }
+
+    conditions
+    {
+        Normalized Health(Event Player) == 1;
+        Player Variable(Event Player, SupportPassiveTimer) != 0;
+    }
+
+    // Action count: 1
+    actions
+    {
+        Set Player Variable(Event Player, SupportPassiveTimer, 0);
+    }
+}
+
+rule("Hero Blacklist Team 1")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team1;
+        All;
+    }
+
+    conditions
+    {
+        Array Contains(Allowed Heroes(Event Player), 0) != Hero Of(Event Player);
+    }
+
+    // Action count: 15
+    actions
+    {
+        While(Compare(Array Contains(All Damage Heroes, 0), ==, Hero Of(Event Player)));
+            Wait(0.016, Ignore Condition);
+            Start Forcing Player To Be Hero(Random Value In Array(All Damage Heroes), Hero(Ana));
+            Stop Forcing Player To Be Hero(Event Player);
+        End;
+        While(Compare(Array Contains(All Support Heroes, 0), ==, Hero Of(Event Player)));
+            Wait(0.016, Ignore Condition);
+            Start Forcing Player To Be Hero(Random Value In Array(All Support Heroes), Hero(Ana));
+            Stop Forcing Player To Be Hero(Event Player);
+        End;
+        While(Compare(Array Contains(All Tank Heroes, 0), ==, Hero Of(Event Player)));
+            Wait(0.016, Ignore Condition);
+            Start Forcing Player To Be Hero(Random Value In Array(Array(All Damage Heroes, All Support Heroes)), Hero(Ana));
+            Stop Forcing Player To Be Hero(Event Player);
+        End;
     }
 }
 
@@ -51,7 +1211,7 @@ rule("Apply Boss Stats")
         ApplyBossStats;
     }
 
-    // Action count: 9
+    // Action count: 12
     actions
     {
         Set Damage Dealt(Event Player, Player Variable(Event Player, bossStats_damageDealt));
@@ -63,6 +1223,1158 @@ rule("Apply Boss Stats")
         Set Gravity(Event Player, Player Variable(Event Player, bossStats_gravity));
         Set Move Speed(Event Player, Player Variable(Event Player, bossStats_moveSpeed));
         Set Projectile Speed(Event Player, Player Variable(Event Player, bossStats_projectileSpeed));
+        Start Scaling Player(Event Player, Player Variable(Event Player, bossStats_scale), True);
+        Start Modifying Hero Voice Lines(Event Player, Player Variable(Event Player, bossStats_voiceScale), True);
+        Set Global Variable(botNames, Array(Custom String("Franky"), Custom String("Frankly"), Custom String("Stanky"), Custom String("Manky"), Custom String("Hanky"), Custom String("Planky"), Custom String("Panky"), Custom String("Cranky"), Custom String("Tanky"), Custom String("Flanky"), Custom String("Janky"), Custom String("Yanky"), Custom String("Ranky"), Custom String("Wanky ( ͡° ͜ʖ ͡°)"), Custom String("Kanky"), Custom String("Clanky"), Custom String("Lanky"), Custom String("Sankey"), Custom String("Banky"), Custom String("Blanky"), Custom String("Thomas")));
+    }
+}
+
+rule("Doomfist Boss Settings")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Slot0;
+    }
+
+    conditions
+    {
+        Hero Of(Event Player) == Hero(Doomfist);
+        Has Spawned(Event Player) == True;
+    }
+
+    // Action count: 26
+    actions
+    {
+        Set Player Variable(Event Player, bossStats_bossInfo, Null);
+        Set Player Variable(Event Player, bossStats_bossInfoStringID, 0);
+        Set Player Variable(Event Player, bossStats_bossInfoToggle, True);
+        Set Player Variable(Event Player, bossStats_currentBoss, Hero Of(Event Player));
+        Set Player Variable(Event Player, bossStats_damageDealt, Workshop Setting Real(Custom String("Doomfist Boss Stats"), Custom String("Doomfist Damage Dealt"), 200, 0, 500, 0));
+        Set Player Variable(Event Player, bossStats_damageReceived, Workshop Setting Real(Custom String("Doomfist Boss Stats"), Custom String("Doomfist Damage Received"), 100, 0, 500, 1));
+        Set Player Variable(Event Player, bossStats_healingDealt, 100);
+        Set Player Variable(Event Player, bossStats_healingReceived, Workshop Setting Real(Custom String("Doomfist Boss Stats"), Custom String("Doomfist Healing Received"), 150, 0, 500, 3));
+        Set Player Variable(Event Player, bossStats_health, Workshop Setting Real(Custom String("Doomfist Boss Stats"), Custom String("Doomfist Health"), 200, 0.01, 500, 4));
+        Set Player Variable(Event Player, bossStats_jumpSpeed, Workshop Setting Real(Custom String("Doomfist Boss Stats"), Custom String("Doomfist Jump Speed"), 100, 0, 500, 5));
+        Set Player Variable(Event Player, bossStats_gravity, Workshop Setting Real(Custom String("Doomfist Boss Stats"), Custom String("Doomfist Gravity"), 100, 0, 500, 6));
+        Set Player Variable(Event Player, bossStats_moveSpeed, Workshop Setting Real(Custom String("Doomfist Boss Stats"), Custom String("Doomfist Movement Speed"), 150, 0, 500, 7));
+        Set Player Variable(Event Player, bossStats_projectileSpeed, Workshop Setting Real(Custom String("Doomfist Boss Stats"), Custom String("Doomfist Projectile Speed"), 100, 0, 500, 8));
+        Set Player Variable(Event Player, bossStats_scale, Workshop Setting Real(Custom String("Doomfist Boss Stats"), Custom String("Doomfist Scale"), 1.2, 0.001, 10, 9));
+        Set Player Variable(Event Player, bossStats_voiceScale, Workshop Setting Real(Custom String("Doomfist Boss Stats"), Custom String("Doomfist Voice Scale"), 0.75, 0.001, 2, 10));
+        Set Player Variable(Event Player, bossStats_secondaryCooldown, Workshop Setting Real(Custom String("Doomfist Boss Abilities"), Custom String("Doomfist Rocket Punch Cooldown"), 4, 0, 500, 0));
+        Set Player Variable(Event Player, bossStats_ability1Cooldown, Workshop Setting Real(Custom String("Doomfist Boss Abilities"), Custom String("Doomfist Seismic Slam Cooldown"), 7, 0, 500, 1));
+        Set Player Variable(Event Player, bossStats_ability2Cooldown, Workshop Setting Real(Custom String("Doomfist Boss Abilities"), Custom String("Doomfist Power Block Cooldown"), 7, 0, 500, 2));
+        Set Player Variable(Event Player, bossStats_jumpAbilityCooldown, 0);
+        Set Player Variable(Event Player, bossStats_crouchAbilityCooldown, 0);
+        Set Player Variable(Event Player, bossStats_hackedTimer, 0);
+        Set Player Variable(Event Player, bossStats_stunned, False);
+        Set Player Variable(Event Player, bossStats_raycastEnd, Subtract(Left, Left));
+        Call Subroutine(ApplyBossStats);
+        Set Player Variable At Index(Event Player, bossStats_bossInfo, 0, Custom String("Can enter Doomtime if he takes 100 damage during Power Block."));
+        Set Player Variable At Index(Event Player, bossStats_bossInfo, 1, Custom String("Using his Ultimate also starts Doomtime."));
+    }
+}
+
+rule("Doomtime Block")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Doomfist;
+    }
+
+    conditions
+    {
+        Or(Is Using Ability 2(Event Player), Is Using Ultimate(Event Player)) == True;
+    }
+
+    // Action count: 18
+    actions
+    {
+        If(Is Using Ultimate(Event Player));
+            Wait Until(And(Not(Is Using Ultimate(Event Player)), Is On Ground(Event Player)), 999999);
+            Set Player Variable(Event Player, doomfistData_doomTimeOn, True);
+            Set Player Variable(Event Player, doomfistData_doomTimeTimer, 100);
+            Abort;
+        End;
+        Set Player Variable(Event Player, doomfistData_doomTimeDamageBlo_0, Evaluate Once(Player Hero Stat(Event Player, Hero(Doomfist), Damage Taken)));
+        While(Is Using Ability 2(Event Player));
+            Set Player Variable(Event Player, doomfistData_doomTimeDamageBlock, Subtract(Player Hero Stat(Event Player, Hero(Doomfist), Damage Taken), Player Variable(Event Player, doomfistData_doomTimeDamageBlo_0)));
+            Wait(0.016, Ignore Condition);
+            If(Compare(Player Variable(Event Player, doomfistData_doomTimeDamageBlock), >=, 20));
+                Set Player Variable(Event Player, doomfistData_doomTimeOn, True);
+                Set Player Variable(Event Player, doomfistData_doomTimeTimer, 100);
+            End;
+        End;
+        Wait Until(Not(Is Using Ability 2(Event Player)), 999999);
+        Set Player Variable(Event Player, doomfistData_doomTimeDamageBlock, 0);
+        Set Player Variable(Event Player, doomfistData_doomTimeDamageBlo_0, Player Hero Stat(Event Player, Hero(Doomfist), Damage Taken));
+    }
+}
+
+rule("Doomtime")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Doomfist;
+    }
+
+    conditions
+    {
+        Player Variable(Event Player, doomfistData_doomTimeOn) == True;
+        Is Alive(Event Player) == True;
+        Not(Player Variable(Event Player, bossStats_stunned)) == True;
+    }
+
+    // Action count: 10
+    actions
+    {
+        Big Message(All Players(All Teams), Custom String("It's Doomtime!"));
+        Set Slow Motion(50);
+        Set Move Speed(Event Player, Multiply(Player Variable(Event Player, bossStats_moveSpeed), 2));
+        Wait Until(Or(Or(Or(Is Firing Secondary(Event Player), Not(Player Variable(Event Player, doomfistData_doomTimeOn))), Compare(Player Variable(Event Player, doomfistData_doomTimeTimer), <=, 0)), Is Dead(Event Player)), 999999);
+        Wait Until(Or(Not(Is Firing Secondary(Event Player)), Compare(Player Variable(Event Player, doomfistData_doomTimeTimer), <=, 0)), 999999);
+        Set Player Variable(Event Player, doomfistData_doomTimeOn, False);
+        Set Player Variable(Event Player, doomfistData_doomTimeTimer, 0);
+        Destroy Progress Bar HUD Text(Player Variable(Event Player, doomfistData_doomTimeTimerID));
+        Set Slow Motion(100);
+        Set Move Speed(Event Player, Player Variable(Event Player, bossStats_moveSpeed));
+    }
+}
+
+rule("Doomtime Progress Bar")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Doomfist;
+    }
+
+    conditions
+    {
+        Player Variable(Event Player, doomfistData_doomTimeTimer) > 0;
+        Player Variable(Event Player, doomfistData_doomTimeTimerID) == 0;
+    }
+
+    // Action count: 10
+    actions
+    {
+        Destroy Progress Bar HUD Text(Player Variable(Event Player, doomfistData_doomTimeTimerID));
+        Create Progress Bar HUD Text(Event Player, Player Variable(Event Player, doomfistData_doomTimeTimer), Custom String("Doomtime!"), Top, 1, Color(White), Color(White), Visible To Values And Color, Default Visibility);
+        Set Player Variable(Event Player, doomfistData_doomTimeTimerID, Last Text ID);
+        While(Compare(Player Variable(Event Player, doomfistData_doomTimeTimer), >, 0));
+            Wait(0.002, Ignore Condition);
+            Modify Player Variable(Event Player, doomfistData_doomTimeTimer, Subtract, 0.2);
+        End;
+        Wait Until(Compare(Player Variable(Event Player, doomfistData_doomTimeTimer), <=, 0), 999999);
+        Destroy Progress Bar HUD Text(Player Variable(Event Player, doomfistData_doomTimeTimerID));
+        Set Player Variable(Event Player, doomfistData_doomTimeTimerID, 0);
+    }
+}
+
+rule("Doomtime Color")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        All;
+        All;
+    }
+
+    conditions
+    {
+        Player Variable(Players In Slot(0, Team 2), doomfistData_doomTimeOn) == True;
+    }
+
+    // Action count: 6
+    actions
+    {
+        Play Effect(Event Player, Ring Explosion Sound, Color(White), Event Player, 200);
+        Play Effect(Players In Slot(0, Team 2), Ring Explosion, Custom Color(80, 80, 80, 255), Event Player, 5);
+        Create Effect(Event Player, Sphere, Custom Color(80, 80, 80, 255), Eye Position(Event Player), 0.5, Position And Radius);
+        Set Player Variable(Event Player, doomfistData_doomTimeColorID, Last Created Entity);
+        Wait Until(Compare(Not(Player Variable(Players In Slot(0, Team 2), doomfistData_doomTimeOn)), ==, True), 999999);
+        Destroy Effect(Player Variable(Event Player, doomfistData_doomTimeColorID));
+    }
+}
+
+rule("D.Va Boss Settings")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Slot0;
+    }
+
+    conditions
+    {
+        Hero Of(Event Player) == Hero(D.va);
+        Has Spawned(Event Player) == True;
+    }
+
+    // Action count: 27
+    actions
+    {
+        Set Player Variable(Event Player, bossStats_bossInfo, Null);
+        Set Player Variable(Event Player, bossStats_bossInfoStringID, 0);
+        Set Player Variable(Event Player, bossStats_bossInfoToggle, True);
+        Set Player Variable(Event Player, bossStats_currentBoss, Hero Of(Event Player));
+        Set Player Variable(Event Player, bossStats_damageDealt, Workshop Setting Real(Custom String("D.Va Boss Stats"), Custom String("D.Va Damage Dealt"), 150, 0, 500, 0));
+        Set Player Variable(Event Player, bossStats_damageReceived, Workshop Setting Real(Custom String("D.Va Boss Stats"), Custom String("D.Va Damage Received"), 100, 0, 500, 1));
+        Set Player Variable(Event Player, bossStats_healingDealt, Workshop Setting Real(Custom String("D.Va Boss Stats"), Custom String("D.Va Healing Dealt"), 50, 0, 500, 2));
+        Set Player Variable(Event Player, bossStats_healingReceived, Workshop Setting Real(Custom String("D.Va Boss Stats"), Custom String("D.Va Healing Received"), 150, 0, 500, 3));
+        Set Player Variable(Event Player, bossStats_health, Workshop Setting Real(Custom String("D.Va Boss Stats"), Custom String("D.Va Health"), 150, 0.5, 500, 4));
+        Set Player Variable(Event Player, bossStats_jumpSpeed, Workshop Setting Real(Custom String("D.Va Boss Stats"), Custom String("D.Va Jump Speed"), 100, 0, 500, 5));
+        Set Player Variable(Event Player, bossStats_gravity, Workshop Setting Real(Custom String("D.Va Boss Stats"), Custom String("D.Va Gravity"), 100, 0, 500, 6));
+        Set Player Variable(Event Player, bossStats_moveSpeed, Workshop Setting Real(Custom String("D.Va Boss Stats"), Custom String("D.Va Movement Speed"), 150, 0, 500, 7));
+        Set Player Variable(Event Player, bossStats_projectileSpeed, Workshop Setting Real(Custom String("D.Va Boss Stats"), Custom String("D.Va Projectile Speed"), 100, 0, 500, 8));
+        Set Player Variable(Event Player, bossStats_scale, Workshop Setting Real(Custom String("D.Va Boss Stats"), Custom String("D.Va Scale"), 1.2, 1, 10, 9));
+        Set Player Variable(Event Player, bossStats_voiceScale, Workshop Setting Real(Custom String("D.Va Boss Stats"), Custom String("D.Va Voice Scale"), 0.75, 0.001, 2, 10));
+        Set Player Variable(Event Player, bossStats_secondaryCooldown, Workshop Setting Real(Custom String("D.Va Boss Abilities"), Custom String("D.Va Defense Matrix Cooldown"), 1, 0, 500, 0));
+        Set Player Variable(Event Player, bossStats_ability1Cooldown, Workshop Setting Real(Custom String("D.Va Boss Abilities"), Custom String("D.Va Boosters Cooldown"), 1, 0, 500, 1));
+        Set Player Variable(Event Player, bossStats_ability2Cooldown, Workshop Setting Real(Custom String("D.Va Boss Abilities"), Custom String("D.Va Homing Missiles Cooldown"), 5, 0, 500, 2));
+        Set Player Variable(Event Player, bossStats_jumpAbilityCooldown, 0);
+        Set Player Variable(Event Player, bossStats_crouchAbilityCooldown, 0);
+        Set Player Variable(Event Player, bossStats_hackedTimer, 0);
+        Set Player Variable(Event Player, bossStats_stunned, False);
+        Set Player Variable(Event Player, bossStats_raycastEnd, Subtract(Left, Left));
+        Call Subroutine(ApplyBossStats);
+        Set Player Variable At Index(Event Player, bossStats_bossInfo, 0, Custom String("Damage blocked with Defense Matrix heals the boss."));
+        Set Player Variable At Index(Event Player, bossStats_bossInfo, 1, Custom String("Can shoot Homing Missiles at glowing targets."));
+        Set Player Variable(Event Player, dvaData_dvaIsDemeched, False);
+    }
+}
+
+rule("D.Va Disable Micro Missiles")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        All;
+        All;
+    }
+
+    conditions
+    {
+        Hero Of(Event Player) == Hero(D.va);
+        Team Of(Event Player) == Team 2;
+    }
+
+    // Action count: 4
+    actions
+    {
+        Set Ability 2 Enabled(Event Player, False);
+        Wait Until(Or(Compare(Hero Of(Event Player), !=, Hero(D.va)), Compare(Team Of(Event Player), ==, Team 1)), 999999);
+        Set Ability 2 Enabled(Event Player, True);
+        Destroy Effect(Player Variable(Event Player, dvaData_dvaMissileReticle));
+    }
+}
+
+rule("D.Va Activate Missiles")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        D.va;
+    }
+
+    conditions
+    {
+        Is Button Held(Event Player, Button(Ability 2)) == True;
+        Player Variable(Event Player, dvaData_dvaMissileAmmo) <= 0;
+        Not(Player Variable(Event Player, bossStats_stunned)) == True;
+        Player Variable(Event Player, dvaData_dvaMissileCooldown) <= 0;
+        Not(Is In Alternate Form(Event Player)) == True;
+    }
+
+    // Action count: 9
+    actions
+    {
+        Play Effect(All Players(All Teams), Brigitte Repair Pack Impact Sound, Null, Position Of(Event Player), 80);
+        Wait(0.256, Ignore Condition);
+        If(Compare(Player Variable(Event Player, bossStats_stunned), !=, True));
+            Set Player Variable(Event Player, dvaData_dvaMissileAmmo, 9);
+        Else;
+            Set Player Variable(Event Player, dvaData_dvaMissileAmmo, 0);
+        End;
+        Wait Until(Compare(Player Variable(Event Player, dvaData_dvaMissileAmmo), <=, 0), 999999);
+        Set Player Variable(Event Player, dvaData_dvaMissileCooldown, Player Variable(Event Player, bossStats_ability2Cooldown));
+    }
+}
+
+rule("D.Va Missile Create Timer")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        D.va;
+    }
+
+    conditions
+    {
+        Player Variable(Event Player, dvaData_dvaMissileTextID) == 0;
+        Not(Is In Alternate Form(Event Player)) == True;
+    }
+
+    // Action count: 2
+    actions
+    {
+        Create In-World Text(Event Player, Custom String("{0}", Ability Icon String(Hero(D.va), Button(Ability 2))), Update Every Frame(Add(Eye Position(Event Player), Multiply(100, Add(Add(Multiply(2.325, World Vector Of(Right, Event Player, Rotation)), Multiply(-1.4, Direction From Angles(Horizontal Angle From Direction(Facing Direction Of(Event Player)), Subtract(Vertical Angle From Direction(Facing Direction Of(Event Player)), 90)))), Multiply(3, Facing Direction Of(Event Player)))))), 3, Do Not Clip, Visible To Position and String, Custom Color(255, 255, 255, 255), Default Visibility);
+        Set Player Variable(Event Player, dvaData_dvaMissileTextID, Last Text ID);
+    }
+}
+
+rule("D.Va Missile Timer Tick")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        D.va;
+    }
+
+    conditions
+    {
+        Player Variable(Event Player, dvaData_dvaMissileCooldown) > 0;
+    }
+
+    // Action count: 13
+    actions
+    {
+        Destroy In-World Text(Player Variable(Event Player, dvaData_dvaMissileTextID));
+        Create In-World Text(Event Player, Custom String("{0}", Player Variable(Event Player, dvaData_dvaMissileCooldown)), Update Every Frame(Add(Eye Position(Event Player), Multiply(100, Add(Add(Multiply(2.325, World Vector Of(Right, Event Player, Rotation)), Multiply(-1.4, Direction From Angles(Horizontal Angle From Direction(Facing Direction Of(Event Player)), Subtract(Vertical Angle From Direction(Facing Direction Of(Event Player)), 90)))), Multiply(3, Facing Direction Of(Event Player)))))), 3, Do Not Clip, Visible To Position and String, Custom Color(255, 139, 36, 255), Default Visibility);
+        Set Player Variable(Event Player, dvaData_dvaMissileTextID, Last Text ID);
+        Wait(1, Ignore Condition);
+        If(Compare(Player Variable(Event Player, dvaData_dvaMissileCooldown), ==, 1));
+            Destroy In-World Text(Player Variable(Event Player, dvaData_dvaMissileTextID));
+            Create In-World Text(Event Player, Custom String("{0}", Ability Icon String(Hero(D.va), Button(Ability 2))), Update Every Frame(Add(Eye Position(Event Player), Multiply(100, Add(Add(Multiply(2.325, World Vector Of(Right, Event Player, Rotation)), Multiply(-1.4, Direction From Angles(Horizontal Angle From Direction(Facing Direction Of(Event Player)), Subtract(Vertical Angle From Direction(Facing Direction Of(Event Player)), 90)))), Multiply(3, Facing Direction Of(Event Player)))))), 3, Do Not Clip, Visible To Position and String, Custom Color(255, 255, 255, 255), Default Visibility);
+            Set Player Variable(Event Player, dvaData_dvaMissileTextID, Last Text ID);
+            Play Effect(Event Player, Hanzo Sonic Arrow Initial Pulse Sound, Color(White), Event Player, 200);
+            Big Message(Event Player, Custom String("Homing Missiles are ready!"));
+        End;
+        Modify Player Variable(Event Player, dvaData_dvaMissileCooldown, Subtract, 1);
+        Loop If Condition Is True;
+    }
+}
+
+rule("D.Va Missile Destroy Timer 1")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Slot0;
+    }
+
+    conditions
+    {
+        Hero Of(Event Player) != Hero(D.va);
+        Player Variable(Event Player, dvaData_dvaMissileTextID) != 0;
+    }
+
+    // Action count: 2
+    actions
+    {
+        Destroy In-World Text(Player Variable(Event Player, dvaData_dvaMissileTextID));
+        Set Player Variable(Event Player, dvaData_dvaMissileTextID, 0);
+    }
+}
+
+rule("D.Va Missile Destroy Timer 2")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        D.va;
+    }
+
+    conditions
+    {
+        Is In Alternate Form(Event Player) == True;
+        Player Variable(Event Player, dvaData_dvaMissileTextID) != 0;
+    }
+
+    // Action count: 2
+    actions
+    {
+        Destroy In-World Text(Player Variable(Event Player, dvaData_dvaMissileTextID));
+        Set Player Variable(Event Player, dvaData_dvaMissileTextID, 0);
+    }
+}
+
+rule("D.Va Homing Target")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        D.va;
+    }
+
+    conditions
+    {
+        Player Variable(Event Player, dvaData_dvaMissileAmmo) == 0;
+        Is Alive(Event Player) == True;
+    }
+
+    // Action count: 10
+    actions
+    {
+        While(Compare(Player Variable(Event Player, dvaData_dvaMissileAmmo), ==, 0));
+            Stop Forcing Player Outlines(Player Variable(Event Player, dvaData_dvaMissileTarget), Event Player);
+            Set Player Variable(Event Player, dvaData_dvaMissileTarget, First Of(Remove From Array(Sorted Array(Filtered Array(Players Within Radius(Eye Position(Event Player), 100, Team 1, Surfaces), Is Alive(Current Array Element)), Angle Between Vectors(Facing Direction Of(Event Player), Vector Towards(Event Player, Current Array Element))), Not(Players In View Angle(Event Player, Team 1, 8)))));
+            Destroy Effect(Player Variable(Event Player, dvaData_dvaMissileReticle));
+            If(And(Or(Compare(Player Variable(Event Player, dvaData_dvaMissileTarget), !=, Null), 0), Compare(Player Variable(Event Player, dvaData_dvaMissileCooldown), ==, 0)));
+                Create Effect(Event Player, Good Aura, Color(Team 1), Player Variable(Event Player, dvaData_dvaMissileTarget), 1, Position And Radius);
+                Set Player Variable(Event Player, dvaData_dvaMissileReticle, Last Created Entity);
+            End;
+            Wait(0.01, Ignore Condition);
+        End;
+    }
+}
+
+rule("D.Va Homing Missiles")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        D.va;
+    }
+
+    conditions
+    {
+        Player Variable(Event Player, dvaData_dvaMissileAmmo) > 0;
+    }
+
+    // Action count: 9
+    actions
+    {
+        Start Forcing Player Outlines(Player Variable(Event Player, dvaData_dvaMissileTarget), Event Player, True, Color(Team 1), Always);
+        Wait(0.09, Ignore Condition);
+        Create Homing Projectile(Pharah Rocket, Event Player, World Vector Of(Vector(-0.4, 2, Empty Array), Event Player, Rotation And Translation), Null, To World, Damage, Team 1, 7, 1, 1.5, Dva Micro Missiles Explosion Effect, Dva Micro Missiles Explosion Sound, 0, 40, 10, 0, Player Variable(Event Player, dvaData_dvaMissileTarget), 1);
+        Play Effect(All Players(All Teams), Widowmaker Venom Mine Explosion Sound, Null, World Vector Of(Vector(-0.4, 2, Empty Array), Event Player, Rotation And Translation), 50);
+        Wait(0.09, Ignore Condition);
+        Create Homing Projectile(Pharah Rocket, Event Player, World Vector Of(Vector(0.4, 2, Empty Array), Event Player, Rotation And Translation), Null, To World, Damage, Team 1, 7, 1, 1.5, Dva Micro Missiles Explosion Effect, Dva Micro Missiles Explosion Sound, 0, 40, 10, 0, Player Variable(Event Player, dvaData_dvaMissileTarget), 1);
+        Play Effect(All Players(All Teams), Widowmaker Venom Mine Explosion Sound, Null, World Vector Of(Vector(0.4, 2, Empty Array), Event Player, Rotation And Translation), 50);
+        Modify Player Variable(Event Player, dvaData_dvaMissileAmmo, Subtract, 1);
+        Loop If Condition Is True;
+    }
+}
+
+rule("D.Va Homing Elimination")
+{
+
+    event
+    {
+        Player earned elimination;
+        Team2;
+        D.va;
+    }
+
+    conditions
+    {
+        Not(Player Variable(Event Player, dvaData_dvaMissileAmmo)) == 0;
+    }
+
+    // Action count: 3
+    actions
+    {
+        Destroy Effect(Player Variable(Event Player, dvaData_dvaMissileReticle));
+        Stop Forcing Player Outlines(Player Variable(Event Player, dvaData_dvaMissileTarget), Event Player);
+        Set Player Variable(Event Player, dvaData_dvaMissileTarget, Null);
+    }
+}
+
+rule("D.Va Homing Stop Tracking")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        D.va;
+    }
+
+    conditions
+    {
+        Not(Player Variable(Event Player, dvaData_dvaMissileAmmo)) == 0;
+        Or(And(Array Contains(Array(Hero(Sombra), Hero(Moira), Hero(Kiriko)), Hero Of(Player Variable(Event Player, dvaData_dvaMissileTarget))), Is Using Ability 1(Player Variable(Event Player, dvaData_dvaMissileTarget))), And(Array Contains(Array(Hero(Sombra), Hero(Tracer)), Hero Of(Player Variable(Event Player, dvaData_dvaMissileTarget))), Is Using Ability 2(Player Variable(Event Player, dvaData_dvaMissileTarget)))) == True;
+    }
+
+    // Action count: 4
+    actions
+    {
+        Wait(1, Abort When False);
+        Destroy Effect(Player Variable(Event Player, dvaData_dvaMissileReticle));
+        Stop Forcing Player Outlines(Player Variable(Event Player, dvaData_dvaMissileTarget), Event Player);
+        Set Player Variable(Event Player, dvaData_dvaMissileTarget, Null);
+    }
+}
+
+rule("D.Va Matrix Heal")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        D.va;
+    }
+
+    conditions
+    {
+        Player Variable(Event Player, dvaData_dvaMatrixHeroStat) < Player Hero Stat(Event Player, Hero(D.va), Damage Blocked);
+    }
+
+    // Action count: 3
+    actions
+    {
+        Heal(Event Player, Event Player, Subtract(Player Hero Stat(Event Player, Hero(D.va), Damage Blocked), Player Variable(Event Player, dvaData_dvaMatrixHeroStat)));
+        Play Effect(All Players(All Teams), Heal Target Active Effect, Color(Team 2), Event Player, 1);
+        Set Player Variable(Event Player, dvaData_dvaMatrixHeroStat, Evaluate Once(Player Hero Stat(Event Player, Hero(D.va), Damage Blocked)));
+    }
+}
+
+disabled rule("D.Va is Demeched Trigger")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        D.va;
+    }
+
+    conditions
+    {
+        Is In Alternate Form(Event Player) == True;
+        Not(Player Variable(Event Player, dvaData_dvaIsDemeched)) == True;
+    }
+
+    // Action count: 13
+    actions
+    {
+        Set Status(Event Player, Null, Phased Out, 3);
+        Create Effect(All Players(All Teams), Baptiste Immortality Field Protected Effect, Color(Team 2), Event Player, 1, Position And Radius);
+        Set Player Variable At Index(Event Player, dvaData_dvaDemechedEffectID, 0, Last Created Entity);
+        Create Effect(All Players(All Teams), Baptiste Immortality Field Protected Sound, Color(Team 2), Event Player, 50, Position And Radius);
+        Set Player Variable At Index(Event Player, dvaData_dvaDemechedEffectID, 1, Last Created Entity);
+        Create Effect(All Players(All Teams), Soldier: 76 Sprinting Effect, Color(Team 2), Event Player, 1, Position And Radius);
+        Set Player Variable At Index(Event Player, dvaData_dvaDemechedEffectID, 2, Last Created Entity);
+        Set Move Speed(Event Player, Multiply(Player Variable(Event Player, bossStats_moveSpeed), 2));
+        Wait(3, Ignore Condition);
+        Set Move Speed(Event Player, 100);
+        Destroy Effect(First Of(Player Variable(Event Player, dvaData_dvaDemechedEffectID)));
+        Destroy Effect(Value In Array(Player Variable(Event Player, dvaData_dvaDemechedEffectID), 1));
+        Destroy Effect(Value In Array(Player Variable(Event Player, dvaData_dvaDemechedEffectID), 2));
+    }
+}
+
+rule("D.Va is dead")
+{
+
+    event
+    {
+        Player died;
+        Team2;
+        D.va;
+    }
+
+    // Action count: 2
+    actions
+    {
+        Wait Until(Is Alive(Event Player), 999999);
+        Call Subroutine(ApplyBossStats);
+    }
+}
+
+disabled rule("D.Va HealHUD")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        D.va;
+    }
+
+    // Action count: 1
+    actions
+    {
+        Create HUD Text(Event Player, Player Hero Stat(Event Player, Hero(D.va), Damage Blocked), Player Variable(Event Player, dvaData_dvaMatrixHeroStat), Null, Left, 0, Color(White), Color(White), Color(White), String, Default Visibility);
+    }
+}
+
+rule("D.Va Stunned")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        D.va;
+    }
+
+    conditions
+    {
+        Player Variable(Event Player, bossStats_stunned) == True;
+        Player Variable(Event Player, dvaData_dvaMissileAmmo) > 0;
+    }
+
+    // Action count: 4
+    actions
+    {
+        Set Player Variable(Event Player, dvaData_dvaMissileAmmo, 0);
+        Set Player Variable(Event Player, dvaData_dvaMissileCooldown, Player Variable(Event Player, bossStats_ability2Cooldown));
+        Destroy Effect(Player Variable(Event Player, dvaData_dvaMissileReticle));
+        Set Player Variable(Event Player, dvaData_dvaMissileReticle, 0);
+    }
+}
+
+rule("Kiriko Boss Settings")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Slot0;
+    }
+
+    conditions
+    {
+        Hero Of(Event Player) == Hero(Kiriko);
+        Has Spawned(Event Player) == True;
+    }
+
+    // Action count: 37
+    actions
+    {
+        Set Player Variable(Event Player, bossStats_bossInfo, Null);
+        Set Player Variable(Event Player, bossStats_bossInfoStringID, 0);
+        Set Player Variable(Event Player, bossStats_bossInfoToggle, True);
+        Set Player Variable(Event Player, bossStats_currentBoss, Hero Of(Event Player));
+        Set Player Variable(Event Player, bossStats_damageDealt, Workshop Setting Real(Custom String("Kiriko Boss Stats"), Custom String("Kiriko Damage Dealt"), 170, 0, 500, 0));
+        Set Player Variable(Event Player, bossStats_damageReceived, Workshop Setting Real(Custom String("Kiriko Boss Stats"), Custom String("Kiriko Damage Received"), 100, 0, 500, 1));
+        Set Player Variable(Event Player, bossStats_healingDealt, 100);
+        Set Player Variable(Event Player, bossStats_healingReceived, Workshop Setting Real(Custom String("Kiriko Boss Stats"), Custom String("Kiriko Healing Received"), 170, 0, 500, 3));
+        Set Player Variable(Event Player, bossStats_health, Workshop Setting Real(Custom String("Kiriko Boss Stats"), Custom String("Kiriko Health"), 250, 0.01, 500, 4));
+        Set Player Variable(Event Player, bossStats_jumpSpeed, Workshop Setting Real(Custom String("Kiriko Boss Stats"), Custom String("Kiriko Jump Speed"), 100, 0, 500, 5));
+        Set Player Variable(Event Player, bossStats_gravity, Workshop Setting Real(Custom String("Kiriko Boss Stats"), Custom String("Kiriko Gravity"), 100, 0, 500, 6));
+        Set Player Variable(Event Player, bossStats_moveSpeed, Workshop Setting Real(Custom String("Kiriko Boss Stats"), Custom String("Kiriko Movement Speed"), 150, 0, 500, 7));
+        Set Player Variable(Event Player, bossStats_projectileSpeed, Workshop Setting Real(Custom String("Kiriko Boss Stats"), Custom String("Kiriko Projectile Speed"), 100, 0, 500, 8));
+        Set Player Variable(Event Player, bossStats_scale, Workshop Setting Real(Custom String("Kiriko Boss Stats"), Custom String("Kiriko Scale"), 1.45, 0.001, 10, 9));
+        Set Player Variable(Event Player, bossStats_voiceScale, Workshop Setting Real(Custom String("Kiriko Boss Stats"), Custom String("Kiriko Voice Scale"), 0.75, 0.001, 2, 10));
+        Set Player Variable(Event Player, bossStats_secondaryCooldown, 0);
+        Set Player Variable(Event Player, bossStats_ability1Cooldown, Workshop Setting Integer(Custom String("Kiriko Boss Abilities"), Custom String("Kiriko Swift Step Cooldown"), 7, 0, 500, 0));
+        Set Player Variable(Event Player, bossStats_ability2Cooldown, Workshop Setting Integer(Custom String("Kiriko Boss Abilities"), Custom String("Kiriko Protection Suzu Cooldown"), 14, 0, 500, 4));
+        Set Player Variable(Event Player, bossStats_jumpAbilityCooldown, 0);
+        Set Player Variable(Event Player, bossStats_crouchAbilityCooldown, 0);
+        Set Player Variable(Event Player, bossStats_hackedTimer, 0);
+        Set Player Variable(Event Player, bossStats_stunned, False);
+        Set Player Variable(Event Player, bossStats_raycastEnd, Subtract(Left, Left));
+        Call Subroutine(ApplyBossStats);
+        Set Player Variable(Event Player, kirikoData_kiriDummyBotID, 0);
+        Set Player Variable(Event Player, kirikoData_kiriCloneEffectID, 0);
+        Set Player Variable(Event Player, kirikoData_kiriCloneCooldown, Workshop Setting Integer(Custom String("Kiriko Boss Abilities"), Custom String("Kiriko Kiri-Clone Cooldown"), 5, 0, 500, 1));
+        Set Player Variable(Event Player, kirikoData_kiriCloneTime, 0);
+        Set Player Variable(Event Player, kirikoData_kiriCloneTextID, 0);
+        Set Player Variable(Event Player, kirikoData_kiriCloneInputID, 0);
+        Set Player Variable(Event Player, kirikoData_kiriClonePrevPosition, Subtract(Left, Left));
+        Set Player Variable(Event Player, kirikoData_kiriCloneHealMode, False);
+        Set Player Variable(Event Player, kirikoData_kiriCloneRange, Workshop Setting Integer(Custom String("Kiriko Boss Abilities"), Custom String("Kiriko Kiri-Clone Attack Range"), 80, 0, 500, 2));
+        Set Player Variable(Event Player, kirikoData_kiriCloneOverhealth, Workshop Setting Integer(Custom String("Kiriko Boss Abilities"), Custom String("Kiriko Kiri-Clone Extra Temporary Health"), 200, 0, 500, 4));
+        Set Player Variable(Event Player, kirikoData_kiriCloneOverhealthID, 0);
+        Set Player Variable At Index(Event Player, bossStats_bossInfo, 0, Custom String("Boss can summon a clone that can attack. Boss can press SF while"));
+        Set Player Variable At Index(Event Player, bossStats_bossInfo, 1, Custom String("looking at their clone to be healed back!"));
+    }
+}
+
+rule("Kiri-Clone Ability")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Slot0;
+    }
+
+    conditions
+    {
+        Hero Of(Event Player) == Hero(Kiriko);
+        Is Button Held(Event Player, Button(Interact)) == True;
+        Player Variable(Event Player, kirikoData_kiriCloneTime) <= 0;
+        Not(Player Variable(Event Player, bossStats_stunned)) == True;
+    }
+
+    // Action count: 22
+    actions
+    {
+        If(Is Alive(Players In Slot(1, Team 2)));
+            Play Effect(All Players(All Teams), Bad Pickup Effect, Color(Team 2), Position Of(Players In Slot(1, Team 2)), 1);
+            Play Effect(Array(Players In Slot(Not(0), Team 2), Team 1), Explosion Sound, Color(Team 2), Position Of(Players In Slot(1, Team 2)), 30);
+            Stop Forcing Dummy Bot Name(Players In Slot(1, Team 2));
+            Stop Scaling Player(Players In Slot(1, Team 2));
+            Destroy Effect(Player Variable(Event Player, kirikoData_kiriCloneEffectID));
+            Remove Health Pool From Player(Player Variable(Event Player, kirikoData_kiriCloneOverhealthID));
+            Destroy Dummy Bot(Team 2, 1);
+        End;
+        Wait(0.016, Ignore Condition);
+        Create Dummy Bot(Hero(Kiriko), Team Of(Event Player), 1, Position Of(Event Player), Facing Direction Of(Event Player));
+        Play Effect(All Players(All Teams), Buff Explosion Sound, Color(Team 2), Position Of(Event Player), 20);
+        Play Effect(All Players(All Teams), Good Pickup Effect, Color(Team 2), Position Of(Event Player), 1);
+        Wait(0.016, Ignore Condition);
+        Start Scaling Player(Players In Slot(1, Team 2), Player Variable(Event Player, bossStats_scale), True);
+        Add Health Pool To Player(Players In Slot(1, Team 2), Health, Player Variable(Event Player, kirikoData_kiriCloneOverhealth), False, True);
+        Set Player Variable(Event Player, kirikoData_kiriCloneOverhealthID, Last Created Health Pool);
+        Start Forcing Dummy Bot Name(Players In Slot(1, Team 2), Custom String("Kiri-Clone"));
+        Wait(0.016, Ignore Condition);
+        Create Effect(All Players(All Teams), Echo Cloning Effect, Color(Team 2), Players In Slot(1, Team 2), 1, Visible To Position and Radius);
+        Set Player Variable(Event Player, kirikoData_kiriCloneEffectID, Last Created Entity);
+        Set Player Variable(Event Player, kirikoData_kiriCloneTime, Player Variable(Event Player, kirikoData_kiriCloneCooldown));
+    }
+}
+
+rule("Kiri-Clone Create Timer")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Slot0;
+    }
+
+    conditions
+    {
+        Hero Of(Event Player) == Hero(Kiriko);
+        Player Variable(Event Player, kirikoData_kiriCloneTextID) == 0;
+    }
+
+    // Action count: 5
+    actions
+    {
+        Create In-World Text(Event Player, Custom String("{0}", Ability Icon String(Hero(Echo), Button(Ultimate))), Update Every Frame(Add(Eye Position(Event Player), Multiply(100, Add(Add(Multiply(1.1, World Vector Of(Right, Event Player, Rotation)), Multiply(-1.6, Direction From Angles(Horizontal Angle From Direction(Facing Direction Of(Event Player)), Subtract(Vertical Angle From Direction(Facing Direction Of(Event Player)), 90)))), Multiply(3, Facing Direction Of(Event Player)))))), 3, Do Not Clip, Visible To Position and String, Custom Color(255, 255, 255, 255), Default Visibility);
+        Set Player Variable(Event Player, kirikoData_kiriCloneTextID, Last Text ID);
+        Destroy In-World Text(Player Variable(Event Player, kirikoData_kiriCloneInputID));
+        Create In-World Text(Event Player, Custom String("{0}", Input Binding String(Button(Interact))), Update Every Frame(Add(Eye Position(Event Player), Multiply(100, Add(Add(Multiply(1.1, World Vector Of(Right, Event Player, Rotation)), Multiply(-1.83, Direction From Angles(Horizontal Angle From Direction(Facing Direction Of(Event Player)), Subtract(Vertical Angle From Direction(Facing Direction Of(Event Player)), 90)))), Multiply(3, Facing Direction Of(Event Player)))))), 2, Do Not Clip, Visible To Position and String, Custom Color(255, 255, 255, 255), Default Visibility);
+        Set Player Variable(Event Player, kirikoData_kiriCloneInputID, Last Text ID);
+    }
+}
+
+rule("Kiri-Clone Timer Tick")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Slot0;
+    }
+
+    conditions
+    {
+        Hero Of(Event Player) == Hero(Kiriko);
+        Player Variable(Event Player, kirikoData_kiriCloneTime) > 0;
+    }
+
+    // Action count: 19
+    actions
+    {
+        Destroy In-World Text(Player Variable(Event Player, kirikoData_kiriCloneTextID));
+        Create In-World Text(Event Player, Custom String("{0} {1}", Ability Icon String(Hero(Echo), Button(Ultimate)), Player Variable(Event Player, kirikoData_kiriCloneTime)), Update Every Frame(Add(Eye Position(Event Player), Multiply(100, Add(Add(Multiply(1.05, World Vector Of(Right, Event Player, Rotation)), Multiply(-1.6, Direction From Angles(Horizontal Angle From Direction(Facing Direction Of(Event Player)), Subtract(Vertical Angle From Direction(Facing Direction Of(Event Player)), 90)))), Multiply(3, Facing Direction Of(Event Player)))))), 3, Do Not Clip, Visible To Position and String, Custom Color(255, 139, 36, 255), Default Visibility);
+        Set Player Variable(Event Player, kirikoData_kiriCloneTextID, Last Text ID);
+        Destroy In-World Text(Player Variable(Event Player, kirikoData_kiriCloneInputID));
+        Create In-World Text(Event Player, Custom String("{0}", Input Binding String(Button(Interact))), Update Every Frame(Add(Eye Position(Event Player), Multiply(100, Add(Add(Multiply(1.1, World Vector Of(Right, Event Player, Rotation)), Multiply(-1.83, Direction From Angles(Horizontal Angle From Direction(Facing Direction Of(Event Player)), Subtract(Vertical Angle From Direction(Facing Direction Of(Event Player)), 90)))), Multiply(3, Facing Direction Of(Event Player)))))), 2, Do Not Clip, Visible To Position and String, Custom Color(255, 255, 255, 50), Default Visibility);
+        Set Player Variable(Event Player, kirikoData_kiriCloneInputID, Last Text ID);
+        Wait(1, Ignore Condition);
+        If(Compare(Player Variable(Event Player, kirikoData_kiriCloneTime), ==, 1));
+            Destroy In-World Text(Player Variable(Event Player, kirikoData_kiriCloneTextID));
+            Create In-World Text(Event Player, Custom String("{0}", Ability Icon String(Hero(Echo), Button(Ultimate))), Update Every Frame(Add(Eye Position(Event Player), Multiply(100, Add(Add(Multiply(1.1, World Vector Of(Right, Event Player, Rotation)), Multiply(-1.6, Direction From Angles(Horizontal Angle From Direction(Facing Direction Of(Event Player)), Subtract(Vertical Angle From Direction(Facing Direction Of(Event Player)), 90)))), Multiply(3, Facing Direction Of(Event Player)))))), 3, Do Not Clip, Visible To Position and String, Custom Color(255, 255, 255, 255), Default Visibility);
+            Set Player Variable(Event Player, kirikoData_kiriCloneTextID, Last Text ID);
+            Destroy In-World Text(Player Variable(Event Player, kirikoData_kiriCloneInputID));
+            Create In-World Text(Event Player, Custom String("{0}", Input Binding String(Button(Interact))), Update Every Frame(Add(Eye Position(Event Player), Multiply(100, Add(Add(Multiply(1.1, World Vector Of(Right, Event Player, Rotation)), Multiply(-1.83, Direction From Angles(Horizontal Angle From Direction(Facing Direction Of(Event Player)), Subtract(Vertical Angle From Direction(Facing Direction Of(Event Player)), 90)))), Multiply(3, Facing Direction Of(Event Player)))))), 2, Do Not Clip, Visible To Position and String, Custom Color(255, 255, 255, 255), Default Visibility);
+            Set Player Variable(Event Player, kirikoData_kiriCloneInputID, Last Text ID);
+            Play Effect(Event Player, Hanzo Sonic Arrow Initial Pulse Sound, Color(White), Event Player, 200);
+            Big Message(Event Player, Custom String("Kiri-Clone is ready!"));
+        End;
+        Modify Player Variable(Event Player, kirikoData_kiriCloneTime, Subtract, 1);
+        Loop If Condition Is True;
+    }
+}
+
+rule("Kiri-Clone Destroy Timer")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Slot0;
+    }
+
+    conditions
+    {
+        Hero Of(Event Player) != Hero(Kiriko);
+        Player Variable(Event Player, kirikoData_kiriCloneTextID) != 0;
+    }
+
+    // Action count: 4
+    actions
+    {
+        Destroy In-World Text(Player Variable(Event Player, kirikoData_kiriCloneTextID));
+        Set Player Variable(Event Player, kirikoData_kiriCloneTextID, 0);
+        Destroy In-World Text(Player Variable(Event Player, kirikoData_kiriCloneInputID));
+        Set Player Variable(Event Player, kirikoData_kiriCloneInputID, 0);
+    }
+}
+
+rule("Kiri-Clone Swap")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Slot0;
+    }
+
+    conditions
+    {
+        Hero Of(Event Player) == Hero(Kiriko);
+        Is Using Ability 1(Event Player) == True;
+    }
+
+    // Action count: 6
+    actions
+    {
+        Set Player Variable(Event Player, kirikoData_kiriClonePrevPosition, Position Of(Event Player));
+        Wait Until(Compare(Ability Cooldown(Event Player, Button(Ability 1)), >, 0), 3);
+        Wait(0.1, Ignore Condition);
+        Set Facing(Players In Slot(1, Team 2), Facing Direction Of(Event Player), To World);
+        Teleport(Players In Slot(1, Team 2), Player Variable(Event Player, kirikoData_kiriClonePrevPosition));
+        Set Player Variable(Event Player, kirikoData_kiriCloneTime, Player Variable(Event Player, kirikoData_kiriCloneCooldown));
+    }
+}
+
+rule("Kiri-Clone Stunned")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Slot0;
+    }
+
+    conditions
+    {
+        Player Variable(Players In Slot(1, Team 2), bossStats_stunned) == True;
+    }
+
+    // Action count: 9
+    actions
+    {
+        Set Player Variable(Event Player, kirikoData_kiriCloneHealMode, False);
+        Set Ability 1 Enabled(Event Player, False);
+        Set Primary Fire Enabled(Players In Slot(1, Team 2), False);
+        Set Secondary Fire Enabled(Players In Slot(1, Team 2), False);
+        Wait(0.001, Ignore Condition);
+        Loop If Condition Is True;
+        Set Ability 1 Enabled(Event Player, True);
+        Set Primary Fire Enabled(Players In Slot(1, Team 2), True);
+        Set Secondary Fire Enabled(Players In Slot(1, Team 2), True);
+    }
+}
+
+rule("Kiri-Clone Attack")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Slot1;
+    }
+
+    conditions
+    {
+        Hero Of(Event Player) == Hero(Kiriko);
+        Is Dummy Bot(Event Player) == True;
+        Is True For Any(Players Within Radius(Eye Position(Event Player), 40, Team 1, Surfaces), Is Alive(Current Array Element)) == True;
+        Is True For Any(Players Within Radius(Eye Position(Event Player), 40, Team 1, Surfaces), If-Then-Else(Compare(Hero Of(Current Array Element), ==, Hero(Sombra)), Not(Is Using Ability 1(Current Array Element)), True)) == True;
+        Not(Player Variable(Event Player, kirikoData_kiriCloneHealMode)) == True;
+        Not(Is Firing Primary(Event Player)) == True;
+        Not(Player Variable(Event Player, bossStats_stunned)) == True;
+        Not(Is Button Held(Players In Slot(1, Team 2), Button(Primary Fire))) == True;
+    }
+
+    // Action count: 30
+    actions
+    {
+        Set Player Variable(Event Player, Center, Position Of(Event Player));
+        Set Player Variable(Event Player, Radius, 40);
+        Set Player Variable(Event Player, Team, Team 1);
+        Set Player Variable(Event Player, Ignore, Empty Array);
+        Set Player Variable(Event Player, playersWithinRange, Players Within Radius(Player Variable(Event Player, Center), Player Variable(Event Player, Radius), Player Variable(Event Player, Team), Surfaces));
+        Set Player Variable(Event Player, closestPlayer, Null);
+        Set Player Variable(Event Player, bestDistance, Add(Player Variable(Event Player, Radius), 1));
+        For Player Variable(Event Player, player, 0, Count Of(Player Variable(Event Player, playersWithinRange)), 1);
+            If(Array Contains(Player Variable(Event Player, Ignore), Value In Array(Player Variable(Event Player, playersWithinRange), Player Variable(Event Player, player))));
+                Skip(12);
+            End;
+            If(Not(Is Alive(Value In Array(Player Variable(Event Player, playersWithinRange), Player Variable(Event Player, player)))));
+                Skip(9);
+            End;
+            If(And(Compare(Hero Of(Value In Array(Player Variable(Event Player, playersWithinRange), Player Variable(Event Player, player))), ==, Hero(Sombra)), Is Using Ability 1(Value In Array(Player Variable(Event Player, playersWithinRange), Player Variable(Event Player, player)))));
+                Skip(6);
+            End;
+            Set Player Variable(Event Player, distance, Distance Between(Player Variable(Event Player, Center), Position Of(Value In Array(Player Variable(Event Player, playersWithinRange), Player Variable(Event Player, player)))));
+            If(Compare(Player Variable(Event Player, distance), <, Player Variable(Event Player, bestDistance)));
+                Set Player Variable(Event Player, bestDistance, Player Variable(Event Player, distance));
+                Set Player Variable(Event Player, closestPlayer, Value In Array(Player Variable(Event Player, playersWithinRange), Player Variable(Event Player, player)));
+            End;
+        End;
+        Start Facing(Event Player, Direction Towards(Eye Position(Event Player), Eye Position(Player Variable(Event Player, closestPlayer))), 270, To World, Direction And Turn Rate);
+        Start Holding Button(Event Player, Button(Secondary Fire));
+        Wait(0.016, Ignore Condition);
+        Loop If Condition Is True;
+        Stop Facing(Event Player);
+        Stop Holding Button(Event Player, Button(Secondary Fire));
+        Press Button(Event Player, Button(Reload));
+    }
+}
+
+rule("Kiri-Clone Heal")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Slot0;
+    }
+
+    conditions
+    {
+        Hero Of(Event Player) == Hero(Kiriko);
+        Players In View Angle(Event Player, Team 2, 75) == Players In Slot(1, Team 2);
+        Is Firing Primary(Event Player) == True;
+        Not(Player Variable(Players In Slot(1, Team 2), bossStats_stunned)) == True;
+    }
+
+    // Action count: 12
+    actions
+    {
+        Set Player Variable(Event Player, kirikoData_kiriCloneHealMode, True);
+        Set Facing(Players In Slot(1, Team 2), Direction Towards(Players In Slot(1, Team 2), Add(Position Of(Event Player), Vector(Empty Array, 0.5, Empty Array))), To World);
+        Wait(0.1, Ignore Condition);
+        Start Holding Button(Players In Slot(1, Team 2), Button(Primary Fire));
+        Start Facing(Players In Slot(1, Team 2), Direction Towards(Players In Slot(1, Team 2), Add(Position Of(Event Player), Vector(Empty Array, 0.5, Empty Array))), 9999, To World, Direction And Turn Rate);
+        Wait(0.1, Ignore Condition);
+        Wait Until(Not(Is Firing Secondary(Players In Slot(1, Team 2))), 999999);
+        Wait Until(Not(Is Reloading(Players In Slot(1, Team 2))), 999999);
+        Wait Until(Not(Is Firing Primary(Players In Slot(1, Team 2))), 999999);
+        Stop Holding Button(Players In Slot(1, Team 2), Button(Primary Fire));
+        Stop Facing(Players In Slot(1, Team 2));
+        Set Player Variable(Event Player, kirikoData_kiriCloneHealMode, False);
+    }
+}
+
+rule("Kiri-Clone Clone Dead")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Slot0;
+    }
+
+    conditions
+    {
+        Hero Of(Event Player) == Hero(Kiriko);
+        Hero Of(Players In Slot(1, Team 2)) == Hero(Kiriko);
+    }
+
+    // Action count: 7
+    actions
+    {
+        Wait Until(Or(Is True For Any(All Dead Players(Team 2), True), Compare(Hero Of(Event Player), !=, Hero(Kiriko))), 999999);
+        Set Player Variable(Event Player, kirikoData_kiriCloneTime, Player Variable(Event Player, bossStats_ability1Cooldown));
+        Play Effect(All Players(All Teams), Bad Pickup Effect, Color(Team 2), Position Of(Players In Slot(1, Team 2)), 0);
+        Play Effect(Event Player, Explosion Sound, Color(Team 2), Event Player, 200);
+        Play Effect(Array(Players In Slot(Not(0), Team 2), Team 1), Explosion Sound, Color(Team 2), Position Of(Players In Slot(1, Team 2)), 30);
+        Wait(0.016, Ignore Condition);
+        Destroy Dummy Bot(Team 2, 1);
+    }
+}
+
+rule("Kiri-Clone Crouch Copycat")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Slot0;
+    }
+
+    conditions
+    {
+        Hero Of(Event Player) == Hero(Kiriko);
+        Is Crouching(Event Player) == True;
+        Players In View Angle(Event Player, Team 2, 75) == Players In Slot(1, Team 2);
+        Not(Is Firing Secondary(Players In Slot(1, Team 2))) == True;
+    }
+
+    // Action count: 7
+    actions
+    {
+        Wait(0.05, Ignore Condition);
+        Start Facing(Players In Slot(1, Team 2), Direction Towards(Eye Position(Players In Slot(1, Team 2)), Eye Position(Event Player)), 900, To World, Direction And Turn Rate);
+        Start Holding Button(Players In Slot(1, Team 2), Button(Crouch));
+        Loop If Condition Is True;
+        Wait(0.05, Ignore Condition);
+        Stop Facing(Players In Slot(1, Team 2));
+        Stop Holding Button(Players In Slot(1, Team 2), Button(Crouch));
+    }
+}
+
+rule("Kiri-Clone T-Bag")
+{
+
+    event
+    {
+        Player earned elimination;
+        Team2;
+        Slot1;
+    }
+
+    conditions
+    {
+        Hero Of(Event Player) == Hero(Kiriko);
+    }
+
+    // Action count: 21
+    actions
+    {
+        Wait(0.5, Ignore Condition);
+        If(And(Not(Is Firing Primary(Event Player)), Not(Is Firing Secondary(Event Player))));
+            Start Holding Button(Event Player, Button(Crouch));
+            Wait(0.1, Ignore Condition);
+            Stop Holding Button(Event Player, Button(Crouch));
+            Wait(0.15, Ignore Condition);
+            Skip If(Is Firing Secondary(Event Player), 4);
+            Start Holding Button(Event Player, Button(Crouch));
+            Wait(0.1, Ignore Condition);
+            Stop Holding Button(Event Player, Button(Crouch));
+            Wait(0.15, Ignore Condition);
+            Skip If(Is Firing Secondary(Event Player), 4);
+            Start Holding Button(Event Player, Button(Crouch));
+            Wait(0.1, Ignore Condition);
+            Stop Holding Button(Event Player, Button(Crouch));
+            Wait(0.15, Ignore Condition);
+            Skip If(Is Firing Secondary(Event Player), 2);
+            Start Holding Button(Event Player, Button(Crouch));
+            Wait(0.1, Ignore Condition);
+            Stop Holding Button(Event Player, Button(Crouch));
+        End;
+    }
+}
+
+rule("Kiri-Clone Ult Convert")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Slot0;
+    }
+
+    conditions
+    {
+        Hero Of(Event Player) == Hero(Kiriko);
+        Ultimate Charge Percent(Players In Slot(1, Team 2)) > 0;
+    }
+
+    // Action count: 2
+    actions
+    {
+        Set Ultimate Charge(Event Player, Add(Ultimate Charge Percent(Event Player), Divide(Ultimate Charge Percent(Players In Slot(1, Team 2)), 2)));
+        Set Ultimate Charge(Players In Slot(1, Team 2), 0);
+    }
+}
+
+rule("Orisa Boss Settings")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Slot0;
+    }
+
+    conditions
+    {
+        Hero Of(Event Player) == Hero(Orisa);
+        Has Spawned(Event Player) == True;
+    }
+
+    // Action count: 24
+    actions
+    {
+        Set Player Variable(Event Player, bossStats_bossInfo, Custom String("Boss Orisa..."));
+        Set Player Variable(Event Player, bossStats_bossInfoStringID, 0);
+        Set Player Variable(Event Player, bossStats_bossInfoToggle, True);
+        Set Player Variable(Event Player, bossStats_currentBoss, Hero Of(Event Player));
+        Set Player Variable(Event Player, bossStats_damageDealt, Workshop Setting Real(Custom String("Orisa Boss Stats"), Custom String("Orisa Damage Dealt"), 170, 0, 500, 0));
+        Set Player Variable(Event Player, bossStats_damageReceived, Workshop Setting Real(Custom String("Orisa Boss Stats"), Custom String("Orisa Damage Received"), 100, 0, 500, 1));
+        Set Player Variable(Event Player, bossStats_healingDealt, 100);
+        Set Player Variable(Event Player, bossStats_healingReceived, Workshop Setting Real(Custom String("Orisa Boss Stats"), Custom String("Orisa Healing Received"), 170, 0, 500, 3));
+        Set Player Variable(Event Player, bossStats_health, Workshop Setting Real(Custom String("Orisa Boss Stats"), Custom String("Orisa Health"), 181.819, 0.01, 500, 4));
+        Set Player Variable(Event Player, bossStats_jumpSpeed, Workshop Setting Real(Custom String("Orisa Boss Stats"), Custom String("Orisa Jump Speed"), 100, 0, 500, 5));
+        Set Player Variable(Event Player, bossStats_gravity, Workshop Setting Real(Custom String("Orisa Boss Stats"), Custom String("Orisa Gravity"), 100, 0, 500, 6));
+        Set Player Variable(Event Player, bossStats_moveSpeed, Workshop Setting Real(Custom String("Orisa Boss Stats"), Custom String("Orisa Movement Speed"), 150, 0, 500, 7));
+        Set Player Variable(Event Player, bossStats_projectileSpeed, Workshop Setting Real(Custom String("Orisa Boss Stats"), Custom String("Orisa Projectile Speed"), 100, 0, 500, 8));
+        Set Player Variable(Event Player, bossStats_scale, Workshop Setting Real(Custom String("Orisa Boss Stats"), Custom String("Orisa Scale"), 1.2, 0.001, 10, 9));
+        Set Player Variable(Event Player, bossStats_voiceScale, Workshop Setting Real(Custom String("Orisa Boss Stats"), Custom String("Orisa Voice Scale"), 0.75, 0.001, 2, 10));
+        Set Player Variable(Event Player, bossStats_secondaryCooldown, Workshop Setting Real(Custom String("Orisa Boss Abilities"), Custom String("Orisa Energy Javelin Cooldown"), 6, 0, 500, 0));
+        Set Player Variable(Event Player, bossStats_ability1Cooldown, Workshop Setting Real(Custom String("Orisa Boss Abilities"), Custom String("Orisa Fortify Cooldown"), 12, 0, 500, 1));
+        Set Player Variable(Event Player, bossStats_ability2Cooldown, Workshop Setting Real(Custom String("Orisa Boss Abilities"), Custom String("Orisa Javelin Spin Cooldown"), 7, 0, 500, 2));
+        Set Player Variable(Event Player, bossStats_jumpAbilityCooldown, 0);
+        Set Player Variable(Event Player, bossStats_crouchAbilityCooldown, 0);
+        Set Player Variable(Event Player, bossStats_hackedTimer, 0);
+        Set Player Variable(Event Player, bossStats_stunned, False);
+        Set Player Variable(Event Player, bossStats_raycastEnd, Subtract(Left, Left));
+        Call Subroutine(ApplyBossStats);
     }
 }
 
@@ -82,19 +2394,682 @@ rule("Reinhardt Boss Settings")
         Has Spawned(Event Player) == True;
     }
 
-    // Action count: 10
+    // Action count: 33
     actions
     {
-        Set Player Variable(Event Player, bossStats_damageDealt, Workshop Setting Real(Custom String("Reinhardt Boss"), Custom String("Reinhardt Damage Dealt"), 170, 10, 500, 0));
-        Set Player Variable(Event Player, bossStats_damageReceived, Workshop Setting Real(Custom String("Reinhardt Boss"), Custom String("Reinhardt Damage Received"), 100, 10, 500, 1));
+        Set Player Variable(Event Player, bossStats_bossInfo, Null);
+        Set Player Variable(Event Player, bossStats_bossInfoStringID, 0);
+        Set Player Variable(Event Player, bossStats_bossInfoToggle, True);
+        Set Player Variable(Event Player, bossStats_currentBoss, Hero Of(Event Player));
+        Set Player Variable(Event Player, bossStats_damageDealt, Workshop Setting Real(Custom String("Reinhardt Boss Stats"), Custom String("Reinhardt Damage Dealt"), 150, 0, 500, 0));
+        Set Player Variable(Event Player, bossStats_damageReceived, Workshop Setting Real(Custom String("Reinhardt Boss Stats"), Custom String("Reinhardt Damage Received"), 100, 0, 500, 1));
         Set Player Variable(Event Player, bossStats_healingDealt, 100);
-        Set Player Variable(Event Player, bossStats_healingReceived, Workshop Setting Real(Custom String("Reinhardt Boss"), Custom String("Reinhardt Healing Received"), 170, 10, 500, 3));
-        Set Player Variable(Event Player, bossStats_health, Workshop Setting Real(Custom String("Reinhardt Boss"), Custom String("Reinhardt Health"), 181.819, 10, 500, 4));
-        Set Player Variable(Event Player, bossStats_jumpSpeed, Workshop Setting Real(Custom String("Reinhardt Boss"), Custom String("Reinhardt Jump Speed"), 100, 10, 500, 5));
-        Set Player Variable(Event Player, bossStats_gravity, Workshop Setting Real(Custom String("Reinhardt Boss"), Custom String("Reinhardt Gravity"), 100, 10, 500, 6));
-        Set Player Variable(Event Player, bossStats_moveSpeed, Workshop Setting Real(Custom String("Reinhardt Boss"), Custom String("Reinhardt Movement Speed"), 150, 10, 500, 7));
-        Set Player Variable(Event Player, bossStats_projectileSpeed, Workshop Setting Real(Custom String("Reinhardt Boss"), Custom String("Reinhardt Projectile Speed"), 100, 10, 500, 8));
+        Set Player Variable(Event Player, bossStats_healingReceived, Workshop Setting Real(Custom String("Reinhardt Boss Stats"), Custom String("Reinhardt Healing Received"), 200, 0, 500, 3));
+        Set Player Variable(Event Player, bossStats_health, Workshop Setting Real(Custom String("Reinhardt Boss Stats"), Custom String("Reinhardt Health"), 200, 0.01, 500, 4));
+        Set Player Variable(Event Player, bossStats_jumpSpeed, Workshop Setting Real(Custom String("Reinhardt Boss Stats"), Custom String("Reinhardt Jump Speed"), 100, 0, 500, 5));
+        Set Player Variable(Event Player, bossStats_gravity, Workshop Setting Real(Custom String("Reinhardt Boss Stats"), Custom String("Reinhardt Gravity"), 100, 0, 500, 6));
+        Set Player Variable(Event Player, bossStats_moveSpeed, Workshop Setting Real(Custom String("Reinhardt Boss Stats"), Custom String("Reinhardt Movement Speed"), 150, 0, 500, 7));
+        Set Player Variable(Event Player, bossStats_projectileSpeed, Workshop Setting Real(Custom String("Reinhardt Boss Stats"), Custom String("Reinhardt Projectile Speed"), 100, 0, 500, 8));
+        Set Player Variable(Event Player, bossStats_scale, Workshop Setting Real(Custom String("Reinhardt Boss Stats"), Custom String("Reinhardt Scale"), 1.2, 0.001, 10, 9));
+        Set Player Variable(Event Player, bossStats_voiceScale, Workshop Setting Real(Custom String("Reinhardt Boss Stats"), Custom String("Reinhardt Voice Scale"), 0.75, 0.001, 2, 10));
+        Set Player Variable(Event Player, bossStats_secondaryCooldown, 5);
+        Set Player Variable(Event Player, bossStats_ability1Cooldown, Workshop Setting Real(Custom String("Reinhardt Boss Abilities"), Custom String("Reinhardt Charge Cooldown"), 6, 0, 500, 1));
+        Set Player Variable(Event Player, bossStats_ability2Cooldown, Workshop Setting Real(Custom String("Reinhardt Boss Abilities"), Custom String("Reinhardt Fire Strike Cooldown"), 3, 0, 500, 2));
+        Set Player Variable(Event Player, bossStats_jumpAbilityCooldown, 0);
+        Set Player Variable(Event Player, bossStats_crouchAbilityCooldown, 0);
+        Set Player Variable(Event Player, bossStats_hackedTimer, 0);
+        Set Player Variable(Event Player, bossStats_stunned, False);
+        Set Player Variable(Event Player, bossStats_raycastEnd, Subtract(Left, Left));
         Call Subroutine(ApplyBossStats);
+        Set Player Variable(Event Player, reindata_reinBarrierTimer, 100);
+        Set Player Variable(Event Player, reindata_reinBarrierBarID, 0);
+        Set Player Variable(Event Player, reindata_reinBarrierRegen, 0);
+        Set Player Variable(Event Player, reindata_reinBarrierEffectID, 0);
+        Set Player Variable(Event Player, reindata_reinBurnDamageDealt, Workshop Setting Real(Custom String("Reinhardt Boss Abilities"), Custom String("Reinhardt Fire Strike Burn Damage"), 50, 0, 500, 3));
+        Set Player Variable(Event Player, reindata_reinBurnDamageID, 0);
+        Set Player Variable(Event Player, reindata_reinBurnEffectID, 0);
+        Set Player Variable At Index(Event Player, bossStats_bossInfo, 0, Custom String("Barrier is very tanky but uses a resource meter. Fire Strike burns."));
+        Set Player Variable At Index(Event Player, bossStats_bossInfo, 1, Custom String("Earthshatter stuns in all directions."));
+    }
+}
+
+rule("Create Reinhardt Barrier Timer")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Slot0;
+    }
+
+    conditions
+    {
+        Hero Of(Event Player) == Hero(Reinhardt);
+    }
+
+    // Action count: 5
+    actions
+    {
+        Destroy Progress Bar HUD Text(Player Variable(Event Player, reindata_reinBarrierBarID));
+        Create Progress Bar HUD Text(Event Player, Player Variable(Event Player, reindata_reinBarrierTimer), Custom String("Barrier Charge"), Top, 0, Color(Team 2), Color(White), Values, Default Visibility);
+        Set Player Variable(Event Player, reindata_reinBarrierBarID, Last Text ID);
+        Wait Until(Compare(Hero Of(Event Player), !=, Hero(Reinhardt)), 999999);
+        Destroy Progress Bar HUD Text(Player Variable(Event Player, reindata_reinBarrierBarID));
+    }
+}
+
+rule("Reinhardt Barrier Drain")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Reinhardt;
+    }
+
+    conditions
+    {
+        Player Variable(Event Player, reindata_reinBarrierTimer) > 0;
+        Is Firing Secondary(Event Player) == True;
+    }
+
+    // Action count: 16
+    actions
+    {
+        Skip If(Not(Player Variable(Event Player, reindata_reinBarrierRegen)), 1);
+        Set Player Variable(Event Player, reindata_reinBarrierRegen, False);
+        Modify Player Variable(Event Player, reindata_reinBarrierTimer, Subtract, 0.5);
+        If(Compare(Player Variable(Event Player, reindata_reinBarrierEffectID), ==, 0));
+            Create Effect(All Players(All Teams), Mercy Boost Beam Sound, Null, Event Player, 100, Visible To Position and Radius);
+            Set Player Variable(Event Player, reindata_reinBarrierEffectID, Last Created Entity);
+        End;
+        If(Compare(Player Variable(Event Player, reindata_reinBarrierTimer), <=, 0));
+            Set Player Variable(Event Player, reindata_reinBarrierTimer, 0);
+            Set Secondary Fire Enabled(Event Player, False);
+            Play Effect(Event Player, Debuff Impact Sound, Null, Event Player, 100);
+        End;
+        Wait(0.016, Ignore Condition);
+        Loop If Condition Is True;
+        Destroy Effect(Player Variable(Event Player, reindata_reinBarrierEffectID));
+        Set Player Variable(Event Player, reindata_reinBarrierEffectID, 0);
+    }
+}
+
+rule("Reinhardt Barrier Regen")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Reinhardt;
+    }
+
+    conditions
+    {
+        Not(Is Firing Secondary(Event Player)) == True;
+        Player Variable(Event Player, reindata_reinBarrierTimer) < 100;
+    }
+
+    // Action count: 18
+    actions
+    {
+        Skip If(Player Variable(Event Player, reindata_reinBarrierRegen), 2);
+        Wait(2, Abort When False);
+        Set Player Variable(Event Player, reindata_reinBarrierRegen, True);
+        Modify Player Variable(Event Player, reindata_reinBarrierTimer, Add, 1);
+        If(Compare(Player Variable(Event Player, reindata_reinBarrierEffectID), ==, 0));
+            Create Effect(Event Player, Sparkles Sound, Null, Event Player, 200, Visible To Position and Radius);
+            Set Player Variable(Event Player, reindata_reinBarrierEffectID, Last Created Entity);
+        End;
+        If(Compare(Player Variable(Event Player, reindata_reinBarrierTimer), >, 10));
+            Set Secondary Fire Enabled(Event Player, True);
+        End;
+        If(Compare(Player Variable(Event Player, reindata_reinBarrierTimer), >, 100));
+            Set Player Variable(Event Player, reindata_reinBarrierTimer, 100);
+        End;
+        Wait(0.016, Ignore Condition);
+        Loop If Condition Is True;
+        Destroy Effect(Player Variable(Event Player, reindata_reinBarrierEffectID));
+        Set Player Variable(Event Player, reindata_reinBarrierEffectID, 0);
+    }
+}
+
+rule("Reinhardt Firestrike Burn")
+{
+
+    event
+    {
+        Player dealt damage;
+        Team2;
+        Reinhardt;
+    }
+
+    conditions
+    {
+        Event Ability == Button(Ability 2);
+        Not(Player Variable(Victim, cleansed)) == True;
+    }
+
+    // Action count: 16
+    actions
+    {
+        If(Compare(Player Variable(Event Player, reindata_reinBurnDamageDealt), >, 0));
+            Start Damage Over Time(Victim, Attacker, 3, Divide(Divide(Player Variable(Event Player, reindata_reinBurnDamageDealt), 3), Divide(Player Variable(Event Player, bossStats_damageDealt), 100)));
+            Set Player Variable At Index(Event Player, reindata_reinBurnDamageID, Slot Of(Victim), Last Damage Over Time ID);
+            Destroy Effect(Value In Array(Player Variable(Event Player, reindata_reinBurnEffectID), Slot Of(Victim)));
+            Create Effect(All Players(All Teams), Ashe Dynamite Burning Material Effect, Color(Team 2), Victim, 0, Visible To Position and Radius);
+            Set Player Variable At Index(Event Player, reindata_reinBurnEffectID, Slot Of(Victim), Last Created Entity);
+            Destroy Effect(Value In Array(Player Variable(Event Player, reindata_reinBurnEffectID), Subtract(Multiply(Add(Slot Of(Victim), 1), 2), 1)));
+            Create Effect(All Players(All Teams), Ashe Dynamite Burning Particle Effect, Color(Team 2), Victim, 0, Visible To Position and Radius);
+            Set Player Variable At Index(Event Player, reindata_reinBurnEffectID, Subtract(Multiply(Add(Slot Of(Victim), 1), 2), 1), Last Created Entity);
+            Wait(3, Ignore Condition);
+            Destroy Effect(Value In Array(Player Variable(Event Player, reindata_reinBurnEffectID), Slot Of(Victim)));
+            Set Player Variable At Index(Event Player, reindata_reinBurnEffectID, Slot Of(Victim), 0);
+            Destroy Effect(Value In Array(Player Variable(Event Player, reindata_reinBurnEffectID), Subtract(Multiply(Add(Slot Of(Victim), 1), 2), 1)));
+            Set Player Variable At Index(Event Player, reindata_reinBurnEffectID, Subtract(Multiply(Add(Slot Of(Victim), 1), 2), 1), 0);
+            Set Player Variable At Index(Event Player, reindata_reinBurnDamageID, Slot Of(Victim), 0);
+        End;
+    }
+}
+
+rule("Reinhardt Firestrike Cleansed")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team1;
+        All;
+    }
+
+    conditions
+    {
+        Player Variable(Event Player, cleansed) == True;
+        Value In Array(Player Variable(Players In Slot(0, Team 2), reindata_reinBurnDamageID), Slot Of(Event Player)) != 0;
+    }
+
+    // Action count: 6
+    actions
+    {
+        Stop Damage Over Time(Value In Array(Player Variable(Event Player, reindata_reinBurnDamageID), Slot Of(Event Player)));
+        Destroy Effect(Value In Array(Player Variable(Event Player, reindata_reinBurnEffectID), Slot Of(Event Player)));
+        Set Player Variable At Index(Event Player, reindata_reinBurnEffectID, Slot Of(Event Player), 0);
+        Destroy Effect(Value In Array(Player Variable(Event Player, reindata_reinBurnEffectID), Multiply(Slot Of(Event Player), 2)));
+        Set Player Variable At Index(Event Player, reindata_reinBurnEffectID, Multiply(Slot Of(Event Player), 2), 0);
+        Set Player Variable At Index(Event Player, reindata_reinBurnDamageID, Slot Of(Event Player), 0);
+    }
+}
+
+rule("Reinhardt Firestrike Cleansed by Health Pack")
+{
+
+    event
+    {
+        Player Received Healing;
+        Team1;
+        All;
+    }
+
+    conditions
+    {
+        Value In Array(Player Variable(Players In Slot(0, Team 2), reindata_reinBurnDamageID), Slot Of(Event Player)) != 0;
+        Event Was Health Pack == True;
+    }
+
+    // Action count: 3
+    actions
+    {
+        Set Player Variable(Event Player, cleansed, True);
+        Wait(0.016, Ignore Condition);
+        Set Player Variable(Event Player, cleansed, False);
+    }
+}
+
+rule("Reinhardt Fast Ultimate")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Reinhardt;
+    }
+
+    conditions
+    {
+        Is Using Ultimate(Event Player) == True;
+    }
+
+    // Action count: 24
+    actions
+    {
+        Create Dummy Bot(Hero(Kiriko), Team Of(Event Player), 1, Position Of(Event Player), Facing Direction Of(Event Player));
+        Set Gravity(Players In Slot(1, Team 2), 0);
+        Set Invisible(Players In Slot(1, Team 2), All);
+        Set Status(Players In Slot(1, Team 2), Null, Invincible, 999999);
+        Set Status(Players In Slot(1, Team 2), Null, Phased Out, 999999);
+        Wait(0.4, Ignore Condition);
+        If(Not(Is Using Ultimate(Event Player)));
+            Destroy Dummy Bot(Team 2, 1);
+        End;
+        Wait Until(Is On Ground(Event Player), 999999);
+        Wait(0.016, Abort When False);
+        Set Ultimate Charge(Players In Slot(1, Team 2), 100);
+        Play Effect(All Players(All Teams), Doomfist Meteor Strike Impact Effect, Color(Team 2), World Vector Of(Vector(Empty Array, 2.5, Empty Array), Event Player, Rotation And Translation), 2);
+        Play Effect(All Players(All Teams), Bastion Tank Cannon Explosion Effect, Color(Team 2), World Vector Of(Subtract(Left, Left), Event Player, Rotation And Translation), 15);
+        Play Effect(All Players(All Teams), Dva Self Destruct Explosion Sound, Color(Team 2), World Vector Of(Subtract(Left, Left), Event Player, Rotation And Translation), 20);
+        Wait(0.016, Ignore Condition);
+        Damage(Filtered Array(Filtered Array(Players Within Radius(Position Of(Event Player), 20, Team 1, Surfaces And Enemy Barriers), Not(Has Status(Current Array Element, Knocked Down))), Compare(Altitude Of(Current Array Element), <=, 1.77)), Event Player, 50);
+        Set Status(Filtered Array(Players Within Radius(Position Of(Event Player), 20, Team 1, Surfaces And Enemy Barriers), Compare(Altitude Of(Current Array Element), <=, 1.77)), Event Player, Knocked Down, 2.75);
+        Wait(0.25, Ignore Condition);
+        Press Button(Players In Slot(1, Team 2), Button(Ultimate));
+        Wait(0.5, Ignore Condition);
+        Teleport(Players In Slot(1, Team 2), Vector(Empty Array, 500, Empty Array));
+        Wait Until(Or(Not(Is Using Ultimate(Players In Slot(1, Team 2))), Compare(Hero Of(Event Player), !=, Hero(Reinhardt))), 999999);
+        Destroy Dummy Bot(Team 2, 1);
+    }
+}
+
+rule("Sigma Boss Settings")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Slot0;
+    }
+
+    conditions
+    {
+        Hero Of(Event Player) == Hero(Sigma);
+        Has Spawned(Event Player) == True;
+    }
+
+    // Action count: 34
+    actions
+    {
+        Set Player Variable(Event Player, bossStats_bossInfo, Null);
+        Set Player Variable(Event Player, bossStats_bossInfoStringID, 0);
+        Set Player Variable(Event Player, bossStats_bossInfoToggle, True);
+        Set Player Variable(Event Player, bossStats_currentBoss, Hero Of(Event Player));
+        Set Player Variable(Event Player, bossStats_damageDealt, Workshop Setting Real(Custom String("Sigma Boss Stats"), Custom String("Sigma Damage Dealt"), 150, 0, 500, 0));
+        Set Player Variable(Event Player, bossStats_damageReceived, Workshop Setting Real(Custom String("Sigma Boss Stats"), Custom String("Sigma Damage Received"), 100, 0, 500, 1));
+        Set Player Variable(Event Player, bossStats_healingDealt, 100);
+        Set Player Variable(Event Player, bossStats_healingReceived, Workshop Setting Real(Custom String("Sigma Boss Stats"), Custom String("Sigma Healing Received"), 150, 0, 500, 3));
+        Set Player Variable(Event Player, bossStats_health, Workshop Setting Real(Custom String("Sigma Boss Stats"), Custom String("Sigma Health"), 150, 0.01, 500, 4));
+        Set Player Variable(Event Player, bossStats_jumpSpeed, Workshop Setting Real(Custom String("Sigma Boss Stats"), Custom String("Sigma Jump Speed"), 100, 0.01, 500, 5));
+        Set Player Variable(Event Player, bossStats_gravity, Workshop Setting Real(Custom String("Sigma Boss Stats"), Custom String("Sigma Gravity"), 100, 0, 500, 6));
+        Set Player Variable(Event Player, bossStats_moveSpeed, Workshop Setting Real(Custom String("Sigma Boss Stats"), Custom String("Sigma Movement Speed"), 150, 0, 500, 7));
+        Set Player Variable(Event Player, bossStats_projectileSpeed, Workshop Setting Real(Custom String("Sigma Boss Stats"), Custom String("Sigma Projectile Speed"), 100, 0, 500, 8));
+        Set Player Variable(Event Player, bossStats_scale, Workshop Setting Real(Custom String("Sigma Boss Stats"), Custom String("Sigma Scale"), 1.1, 0.001, 10, 9));
+        Set Player Variable(Event Player, bossStats_voiceScale, Workshop Setting Real(Custom String("Sigma Boss Stats"), Custom String("Sigma Voice Scale"), 0.75, 0.001, 2, 10));
+        Set Player Variable(Event Player, bossStats_secondaryCooldown, Workshop Setting Real(Custom String("Sigma Boss Abilities"), Custom String("Sigma Experimental Barrier Cooldown"), 2, 0, 500, 0));
+        Set Player Variable(Event Player, bossStats_ability1Cooldown, Workshop Setting Real(Custom String("Sigma Boss Abilities"), Custom String("Sigma Kinetic Grasp Cooldown"), 8, 0, 500, 1));
+        Set Player Variable(Event Player, bossStats_ability2Cooldown, Workshop Setting Real(Custom String("Sigma Boss Abilities"), Custom String("Sigma Accretion Cooldown"), 2.5, 0, 500, 2));
+        Set Player Variable(Event Player, bossStats_jumpAbilityCooldown, 0);
+        Set Player Variable(Event Player, bossStats_crouchAbilityCooldown, 0);
+        Set Player Variable(Event Player, bossStats_hackedTimer, 0);
+        Set Player Variable(Event Player, bossStats_stunned, False);
+        Set Player Variable(Event Player, bossStats_raycastEnd, Subtract(Left, Left));
+        Call Subroutine(ApplyBossStats);
+        Set Player Variable(Event Player, sigmaData_throttleXYZ, Subtract(Left, Left));
+        Set Player Variable(Event Player, sigmaData_kineticGraspScale, 0);
+        Set Player Variable(Event Player, sigmaData_kineticGraspID, 0);
+        Set Player Variable(Event Player, sigmaData_kineticGraspColor, Null);
+        Set Player Variable(Event Player, sigmaData_kineticGraspVictims, Null);
+        Set Player Variable(Event Player, sigmaData_kineticGraspVictimGrav, 0);
+        Set Player Variable(Event Player, sigmaData_kineticGraspVictimCoil, Null);
+        Set Player Variable(Event Player, sigmaData_damageMitigated, 0);
+        Set Player Variable At Index(Event Player, bossStats_bossInfo, 0, Custom String("Boss can fly. Accretion is slow but does lots of damage."));
+        Set Player Variable At Index(Event Player, bossStats_bossInfo, 1, Custom String("Kinetic Grasp turns Sigma into a black hole."));
+    }
+}
+
+rule("Sigma Flight Controls")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Slot0;
+    }
+
+    conditions
+    {
+        Has Spawned(Event Player) == True;
+        Hero Of(Event Player) == Hero(Sigma);
+    }
+
+    // Action count: 3
+    actions
+    {
+        "Records 3D input for Sigma's flight movement. Additionally, it allows the use of Vertical Facing Angle to allow Sigma to fly towards and away from where he's facing."
+        Set Player Variable(Event Player, sigmaData_throttleXYZ, Vector(X Component Of(Throttle Of(Event Player)), Add(Max(Is Button Held(Event Player, Button(Jump)), Multiply(Divide(Multiply(Vertical Facing Angle Of(Event Player), -1), 89), Z Component Of(Throttle Of(Event Player)))), Multiply(Divide(Multiply(Vertical Facing Angle Of(Event Player), -1), 89), Z Component Of(Throttle Of(Event Player)))), Z Component Of(Throttle Of(Event Player))));
+        Wait(0.016, Ignore Condition);
+        Loop If(Compare(Hero Of(Event Player), ==, Hero(Sigma)));
+    }
+}
+
+rule("Sigma Flight")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Sigma;
+    }
+
+    conditions
+    {
+        Not(Player Variable(Event Player, bossStats_stunned)) == True;
+        Player Variable(Event Player, sigmaData_throttleXYZ) != Subtract(Left, Left);
+        Is In Air(Event Player) == True;
+        Not(Is Button Held(Event Player, Button(Crouch))) == True;
+        Not(Is Using Ultimate(Event Player)) == True;
+    }
+
+    // Action count: 3
+    actions
+    {
+        "Allows Sigma to fly using the control inputs from the previous rule. Holding Crouch re-enables gravity for Sigma while held."
+        Apply Impulse(Event Player, Player Variable(Event Player, sigmaData_throttleXYZ), Divide(Player Variable(Event Player, bossStats_moveSpeed), 400), To Player, Incorporate Contrary Motion);
+        Wait(0.016, Ignore Condition);
+        Loop If Condition Is True;
+    }
+}
+
+rule("Sigma Grounded")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Sigma;
+    }
+
+    conditions
+    {
+        Or(Or(Or(Compare(Altitude Of(Event Player), <, 0.5), Player Variable(Event Player, bossStats_stunned)), Is Button Held(Event Player, Button(Crouch))), Is Using Ultimate(Event Player)) == True;
+    }
+
+    // Action count: 6
+    actions
+    {
+        "While on the ground, stunned, or is holding crouch: set gravity and movement speed to normal. This also will enable regular controls during Ultimate."
+        Set Move Speed(Event Player, Player Variable(Event Player, bossStats_moveSpeed));
+        Set Gravity(Event Player, Player Variable(Event Player, bossStats_gravity));
+        "Is In Air is needed in order to detect if the player is standing on a moving object or not. Altitude Of is needed as well to avoid infinite looping between Sigma Grounded and Sigma Flight rules when jumping."
+        Wait Until(Or(And(And(And(Not(Player Variable(Event Player, bossStats_stunned)), Not(Is Button Held(Event Player, Button(Crouch)))), Is In Air(Event Player)), Compare(Altitude Of(Event Player), >=, 0.5)), Is Using Ultimate(Event Player)), 999999);
+        Wait Until(Not(Is Using Ultimate(Event Player)), 999999);
+        Set Move Speed(Event Player, 0);
+        Set Gravity(Event Player, 0);
+    }
+}
+
+rule("Sigma Slow Accretion")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Sigma;
+    }
+
+    conditions
+    {
+        Is Using Ability 2(Event Player) == True;
+    }
+
+    // Action count: 8
+    actions
+    {
+        "Throws Accretion at slow speed and low gravity but deals double damage than normal Accretion."
+        Set Projectile Speed(Event Player, 30);
+        Set Projectile Gravity(Event Player, 15);
+        Set Damage Dealt(Event Player, Multiply(Player Variable(Event Player, bossStats_damageDealt), 2));
+        Wait Until(Not(Is Using Ability 2(Event Player)), 999999);
+        Wait(0.016, Ignore Condition);
+        Set Projectile Speed(Event Player, 100);
+        Set Projectile Gravity(Event Player, 100);
+        Set Damage Dealt(Event Player, Player Variable(Event Player, bossStats_damageDealt));
+    }
+}
+
+rule("Sigma Black Hole Grasp Animation")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Sigma;
+    }
+
+    conditions
+    {
+        Is Using Ability 1(Event Player) == True;
+    }
+
+    // Action count: 27
+    actions
+    {
+        "The visual effects of the black hole and the scale of its hitbox.
+Sets color of Black Hole Grasp to black."
+        Set Player Variable(Event Player, sigmaData_kineticGraspColor, Color(Black));
+        "Creates the black hole effect for Sigma. Size is dependent on 'sigmadata_kineticGraspScale'."
+        Create Effect(All Players(All Teams), Sphere, Player Variable(Event Player, sigmaData_kineticGraspColor), Add(Position Of(Event Player), Up), Player Variable(Event Player, sigmaData_kineticGraspScale), Position Radius And Color);
+        Set Player Variable At Index(Event Player, sigmaData_kineticGraspID, 0, Last Created Entity);
+        "Starting scale of the Black Hole."
+        If(And(Is Using Ability 1(Event Player), Compare(Player Variable(Event Player, sigmaData_kineticGraspScale), ==, 0)));
+            Set Player Variable(Event Player, sigmaData_kineticGraspScale, 0.5);
+            Play Effect(All Players(All Teams), Moira Fade Disappear Effect, Color(Black), Add(Position Of(Event Player), Up), 3);
+        End;
+        "Quickly scales the black hole to 2 meters in size."
+        While(And(Is Using Ability 1(Event Player), Compare(Player Variable(Event Player, sigmaData_kineticGraspScale), <, 2)));
+            Modify Player Variable(Event Player, sigmaData_kineticGraspScale, Add, 0.25);
+            Wait(0.016, Ignore Condition);
+        End;
+        "After scaling to 2 meters, continue to scale slowly until ability ends."
+        While(And(Is Using Ability 1(Event Player), Compare(Player Variable(Event Player, sigmaData_kineticGraspScale), >=, 2)));
+            Modify Player Variable(Event Player, sigmaData_kineticGraspScale, Add, 0.05);
+            Wait(0.016, Ignore Condition);
+        End;
+        Wait Until(Not(Is Using Ability 1(Event Player)), 999999);
+        "Make the Black hole turn into Sigma's Team Color before imploding."
+        Set Player Variable(Event Player, sigmaData_kineticGraspColor, Color(Team 2));
+        "Explosion effect at Sigma's position."
+        Play Effect(All Players(All Teams), Zarya Particle Cannon Explosion Effect, Color(Team 2), Add(Position Of(Event Player), Up), Player Variable(Event Player, sigmaData_kineticGraspScale));
+        Play Effect(All Players(All Teams), Sombra Emp Explosion Sound, Color(Black), Add(Position Of(Event Player), Up), 80);
+        "Quickly implodes the balack hole."
+        While(And(Not(Is Using Ability 1(Event Player)), Compare(Player Variable(Event Player, sigmaData_kineticGraspScale), >, 0)));
+            Modify Player Variable(Event Player, sigmaData_kineticGraspScale, Subtract, 0.5);
+            Wait(0.016, Ignore Condition);
+        End;
+        Wait Until(Compare(Player Variable(Event Player, sigmaData_kineticGraspScale), <=, 0), 999999);
+        Destroy Effect(First Of(Player Variable(Event Player, sigmaData_kineticGraspID)));
+        Set Player Variable(Event Player, sigmaData_kineticGraspScale, 0);
+        Set Player Variable(Event Player, sigmaData_kineticGraspID, 0);
+    }
+}
+
+rule("Sigma Black Hole Grasp Damage")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Sigma;
+    }
+
+    conditions
+    {
+        Is Using Ability 1(Event Player) == True;
+    }
+
+    // Action count: 39
+    actions
+    {
+        "Applies damage and zero grav to enemies inside of the black hole. (Please remember to remove cleansed heroes and Orisa using Fortify from array.)"
+        Set Player Variable(Event Player, sigmaData_kineticGraspVictims, Players Within Radius(Position Of(Event Player), Player Variable(Event Player, sigmaData_kineticGraspScale), Team 1, Off));
+        Damage(Player Variable(Event Player, sigmaData_kineticGraspVictims), Event Player, 0.1);
+        Set Environment Credit Player(Player Variable(Event Player, sigmaData_kineticGraspVictims), Event Player);
+        If(Not(Is Button Held(Event Player, Button(Crouch))));
+            Set Gravity(Player Variable(Event Player, sigmaData_kineticGraspVictims), 0);
+            Else If(Is Button Held(Event Player, Button(Crouch)));
+            Set Gravity(Player Variable(Event Player, sigmaData_kineticGraspVictims), Player Variable(Event Player, bossStats_gravity));
+        End;
+        Set Move Speed(Player Variable(Event Player, sigmaData_kineticGraspVictims), 0);
+        Set Gravity(Remove From Array(All Players(Team 1), Player Variable(Event Player, sigmaData_kineticGraspVictims)), 100);
+        Set Move Speed(Remove From Array(All Players(Team 1), Player Variable(Event Player, sigmaData_kineticGraspVictims)), 100);
+        "Create a beam effect between Sigma and his victims."
+        For Player Variable(Event Player, index, 0, Player Variable(Event Player, sigmaData_kineticGraspVictims), 1);
+            Create Beam Effect(All Players(All Teams), Moira Grasp Connected Beam, Position Of(Event Player), Position Of(Value In Array(Player Variable(Event Player, sigmaData_kineticGraspVictims), Player Variable(Event Player, index))), Color(Team 2), Position And Radius);
+            Set Player Variable At Index(Event Player, sigmaData_kineticGraspVictimCoil, Player Variable(Event Player, index), Last Created Entity);
+            Apply Impulse(Value In Array(Player Variable(Event Player, sigmaData_kineticGraspVictims), Player Variable(Event Player, index)), Direction Towards(Value In Array(Player Variable(Event Player, sigmaData_kineticGraspVictims), Player Variable(Event Player, index)), World Vector Of(Forward, Event Player, Rotation And Translation)), 1, To World, Incorporate Contrary Motion);
+        End;
+        "Force victims to move in the same way as Sigma."
+        If(Compare(Player Variable(Event Player, sigmaData_throttleXYZ), !=, Subtract(Left, Left)));
+            Apply Impulse(Player Variable(Event Player, sigmaData_kineticGraspVictims), World Vector Of(Player Variable(Event Player, sigmaData_throttleXYZ), Event Player, Rotation), Divide(Player Variable(Event Player, bossStats_moveSpeed), 400), To World, Incorporate Contrary Motion);
+        End;
+        Wait(0.016, Ignore Condition);
+        Loop If Condition Is True;
+        For Player Variable(Event Player, index, 0, Count Of(All Players(Team 1)), 1);
+            Destroy Effect(Player Variable(Event Player, index));
+        End;
+        If(Not(Player Variable(Event Player, bossStats_stunned)));
+            Set Player Variable(Event Player, sigmaData_kineticGraspVictimGrav, 0);
+            Damage(Player Variable(Event Player, sigmaData_kineticGraspVictims), Event Player, 20);
+        End;
+        If(And(Compare(Player Variable(Event Player, sigmaData_kineticGraspVictimGrav), <, 100), Not(Player Variable(Event Player, bossStats_stunned))));
+            Wait(1, Ignore Condition);
+            Set Gravity(Player Variable(Event Player, sigmaData_kineticGraspVictims), Player Variable(Event Player, sigmaData_kineticGraspVictimGrav));
+            Set Move Speed(Player Variable(Event Player, sigmaData_kineticGraspVictims), Player Variable(Event Player, sigmaData_kineticGraspVictimGrav));
+            Modify Player Variable(Event Player, sigmaData_kineticGraspVictimGrav, Add, 2);
+            Wait(0.02, Ignore Condition);
+            Loop If(Compare(Player Variable(Event Player, sigmaData_kineticGraspVictimGrav), <, 100));
+            Abort;
+        End;
+        Set Gravity(All Players(Team 1), 100);
+        Set Move Speed(All Players(Team 1), 100);
+    }
+}
+
+rule("Secondary Fire Cooldown")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Slot0;
+    }
+
+    conditions
+    {
+        Ability Cooldown(Event Player, Button(Secondary Fire)) > 0;
+    }
+
+    // Action count: 1
+    actions
+    {
+        Set Ability Cooldown(Event Player, Button(Secondary Fire), Player Variable(Event Player, bossStats_secondaryCooldown));
+    }
+}
+
+rule("Ability 1 Cooldown")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Slot0;
+    }
+
+    conditions
+    {
+        Ability Cooldown(Event Player, Button(Ability 1)) > 0;
+    }
+
+    // Action count: 1
+    actions
+    {
+        Set Ability Cooldown(Event Player, Button(Ability 1), Player Variable(Event Player, bossStats_ability1Cooldown));
+    }
+}
+
+rule("Ability 2 Cooldown")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Slot0;
+    }
+
+    conditions
+    {
+        Ability Cooldown(Event Player, Button(Ability 2)) > 0;
+    }
+
+    // Action count: 1
+    actions
+    {
+        Set Ability Cooldown(Event Player, Button(Ability 2), Player Variable(Event Player, bossStats_ability2Cooldown));
+    }
+}
+
+rule("Jump Cooldown")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Slot0;
+    }
+
+    conditions
+    {
+        Ability Cooldown(Event Player, Button(Jump)) > 0;
+    }
+
+    // Action count: 1
+    actions
+    {
+        Set Ability Cooldown(Event Player, Button(Jump), Player Variable(Event Player, bossStats_jumpAbilityCooldown));
+    }
+}
+
+rule("Crouch Cooldown")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Slot0;
+    }
+
+    conditions
+    {
+        Ability Cooldown(Event Player, Button(Crouch)) > 0;
+    }
+
+    // Action count: 1
+    actions
+    {
+        Set Ability Cooldown(Event Player, Button(Crouch), Player Variable(Event Player, bossStats_crouchAbilityCooldown));
     }
 }
 

@@ -1,4 +1,25 @@
 import "../boss_stats.del";
+import "../cleansed_effect.del";
+
+struct ReinData{
+    public Number reinBarrierTimer;
+    public Number reinBarrierBarID;
+    public Boolean reinBarrierRegen;
+    public Number reinBarrierEffectID;
+    public Number reinBurnDamageDealt;
+    public Number reinBurnDamageID;
+    public Number reinBurnEffectID;
+}
+
+playervar ReinData reindata = {
+    reinBarrierTimer: 0,
+    reinBarrierBarID: 0,
+    reinBarrierRegen: false,
+    reinBarrierEffectID: 0,
+    reinBurnDamageDealt: 0,
+    reinBurnDamageID: 0,
+    reinBurnEffectID: 0,
+};
 
 rule: "Reinhardt Boss Settings"
 Event.OngoingPlayer
@@ -8,10 +29,14 @@ if (HeroOf(EventPlayer()) == Hero.Reinhardt)
 if (HasSpawned(EventPlayer()))
 {
     bossStats = {
+        bossInfo: null,
+        bossInfoStringID: 0,
+        bossInfoToggle: true,
+        currentBoss: HeroOf(EventPlayer()),
         damageDealt: WorkshopSettingReal(
             REINHARDT_STATS,
             "Reinhardt Damage Dealt",
-            170,
+            150,
             0,
             500,
             0,
@@ -28,7 +53,7 @@ if (HasSpawned(EventPlayer()))
         healingReceived: WorkshopSettingReal(
             REINHARDT_STATS,
             "Reinhardt Healing Received",
-            170,
+            200,
             0,
             500,
             3,
@@ -36,7 +61,7 @@ if (HasSpawned(EventPlayer()))
         health: WorkshopSettingReal(
             REINHARDT_STATS, 
             "Reinhardt Health", 
-            181.819, 
+            200, 
             0.01, 
             500, 
             4,
@@ -73,11 +98,27 @@ if (HasSpawned(EventPlayer()))
             500,
             8
         ),
+        scale: WorkshopSettingReal(
+            REINHARDT_STATS,
+            "Reinhardt Scale",
+            1.2,
+            0.001,
+            10,
+            9,
+        ),
+        voiceScale: WorkshopSettingReal(
+            REINHARDT_STATS,
+            "Reinhardt Voice Scale",
+            0.75,
+            0.001,
+            2,
+            10,
+        ),
         secondaryCooldown: 5,
         ability1Cooldown: WorkshopSettingReal(
             REINHARDT_ABILITIES,
             "Reinhardt Charge Cooldown",
-            7,
+            6,
             0,
             500,
             1
@@ -85,13 +126,188 @@ if (HasSpawned(EventPlayer()))
         ability2Cooldown: WorkshopSettingReal(
             REINHARDT_ABILITIES,
             "Reinhardt Fire Strike Cooldown",
-            6,
+            3,
             0,
             500,
             2
-        )
+        ),
         jumpAbilityCooldown: 0,
-        crouchAbilityCooldown: 0
+        crouchAbilityCooldown: 0,
+        raycastEnd: Vector(0, 0, 0),
+        hackedTimer: 0,
+        stunned: false,   
     };
     ApplyBossStats();
+    reindata = {
+        reinBurnDamageDealt: WorkshopSettingReal(
+            REINHARDT_ABILITIES,
+            "Reinhardt Fire Strike Burn Damage",
+            50,
+            0,
+            500,
+            3
+        ),
+        reinBarrierBarID: 0,
+        reinBarrierEffectID: 0,
+        reinBarrierRegen: 0,
+        reinBarrierTimer: 100,
+        reinBurnDamageID: 0,
+        reinBurnEffectID: 0
+    };
+    bossStats.bossInfo[0] = "Barrier is very tanky but uses a resource meter. Fire Strike burns.";
+    bossStats.bossInfo[1] = "Earthshatter stuns in all directions.";
+}
+
+rule: 'Create Reinhardt Barrier Timer'
+Event.OngoingPlayer
+Team.Team2
+Player.Slot0
+if (HeroOf(EventPlayer()) == Hero.Reinhardt)
+{
+    DestroyProgressBarHudText(reindata.reinBarrierBarID);
+    CreateProgressBarHudText(EventPlayer(), reindata.reinBarrierTimer, "Barrier Charge", Location.Top, 0, Color.Team2, Color.White, ProgressBarHudEvaluation.Values, Spectators.DefaultVisibility);
+    reindata.reinBarrierBarID = LastTextID();
+    WaitUntil(HeroOf(EventPlayer()) != Hero.Reinhardt, 999999);
+    DestroyProgressBarHudText(reindata.reinBarrierBarID);
+}
+
+rule: 'Reinhardt Barrier Drain'
+Event.OngoingPlayer
+Team.Team2
+Player.Reinhardt
+if (reindata.reinBarrierTimer > 0)
+if (IsFiringSecondary(EventPlayer()))
+{
+    SkipIf(!reindata.reinBarrierRegen, 1);
+    reindata.reinBarrierRegen = false;
+    reindata.reinBarrierTimer -= 0.5;
+    if (reindata.reinBarrierEffectID == 0)
+    {
+        CreateEffect(AllPlayers(), Effect.MercyBoostBeamSound, null, EventPlayer(), 100);
+        reindata.reinBarrierEffectID = LastCreatedEntity();
+    }
+    if (reindata.reinBarrierTimer <= 0)
+    {
+        reindata.reinBarrierTimer = 0;
+        SetSecondaryFireEnabled(EventPlayer(), false);
+        PlayEffect(EventPlayer(), PlayEffect.DebuffImpactSound, null, EventPlayer(), 100);
+    }
+    MinWait();
+    LoopIfConditionIsTrue();
+    DestroyEffect(reindata.reinBarrierEffectID);
+    reindata.reinBarrierEffectID = 0;
+}
+
+rule: 'Reinhardt Barrier Regen'
+Event.OngoingPlayer
+Team.Team2
+Player.Reinhardt
+if (!IsFiringSecondary(EventPlayer()))
+if (reindata.reinBarrierTimer < 100)
+{
+    SkipIf(reindata.reinBarrierRegen, 2);
+    Wait(2, WaitBehavior.AbortWhenFalse);
+    reindata.reinBarrierRegen = true;
+    reindata.reinBarrierTimer += 1;
+    if (reindata.reinBarrierEffectID == 0)
+    {
+        CreateEffect(EventPlayer(), Effect.SparklesSound, null, EventPlayer(), 200);
+        reindata.reinBarrierEffectID = LastCreatedEntity();
+    }
+    if (reindata.reinBarrierTimer > 10)
+    {
+        SetSecondaryFireEnabled(EventPlayer(), true);
+    }
+    if (reindata.reinBarrierTimer > 100)
+    {
+        reindata.reinBarrierTimer = 100;
+    }
+    MinWait();
+    LoopIfConditionIsTrue();
+    DestroyEffect(reindata.reinBarrierEffectID);
+    reindata.reinBarrierEffectID = 0;
+}
+
+rule: 'Reinhardt Firestrike Burn'
+Event.OnDamageDealt
+Team.Team2
+Player.Reinhardt
+if (EventAbility() == Button.Ability2)
+if (!Victim().cleansed)
+{
+    if(reindata.reinBurnDamageDealt > 0)
+    {
+        StartDamageOverTime(Victim(), Attacker(), 3, (reindata.reinBurnDamageDealt/3)/(bossStats.damageDealt/100));
+        reindata.reinBurnDamageID[SlotOf(Victim())] = (LastDamageOverTime());
+        DestroyEffect(reindata.reinBurnEffectID[SlotOf(Victim())]);
+        CreateEffect(AllPlayers(Team.All), Effect.AsheDynamiteBurningMaterialEffect, Color.Team2, Victim());
+        reindata.reinBurnEffectID[SlotOf(Victim())] = LastCreatedEntity();
+        DestroyEffect(reindata.reinBurnEffectID[(SlotOf(Victim()) + 1) * 2 - 1]);        
+        CreateEffect(AllPlayers(Team.All), Effect.AsheDynamiteBurningParticleEffect, Color.Team2, Victim());
+        reindata.reinBurnEffectID[(SlotOf(Victim()) + 1) * 2 - 1] = LastCreatedEntity();
+        Wait(3);
+        DestroyEffect(reindata.reinBurnEffectID[SlotOf(Victim())]);
+        reindata.reinBurnEffectID[SlotOf(Victim())] = 0;
+        DestroyEffect(reindata.reinBurnEffectID[(SlotOf(Victim()) + 1) * 2 - 1]);
+        reindata.reinBurnEffectID[(SlotOf(Victim()) + 1) * 2 - 1] = 0;
+        reindata.reinBurnDamageID[SlotOf(Victim())] = 0;
+    }
+}
+
+rule: 'Reinhardt Firestrike Cleansed'
+Event.OngoingPlayer
+Team.Team1
+if (cleansed)
+if (ValueInArray(PlayersInSlot(0, Team.Team2).reindata.reinBurnDamageID, SlotOf(EventPlayer())) != 0)
+{
+    StopDamageOverTime(reindata.reinBurnDamageID[SlotOf(EventPlayer())]);
+    DestroyEffect(reindata.reinBurnEffectID[SlotOf(EventPlayer())]);
+    reindata.reinBurnEffectID[SlotOf(EventPlayer())] = 0;
+    DestroyEffect(reindata.reinBurnEffectID[SlotOf(EventPlayer()) * 2]);
+    reindata.reinBurnEffectID[SlotOf(EventPlayer()) * 2] = 0;
+    reindata.reinBurnDamageID[SlotOf(EventPlayer())] = 0;
+}
+
+rule: 'Reinhardt Firestrike Cleansed by Health Pack'
+Event.OnHealingTaken
+Team.Team1
+if (ValueInArray(PlayersInSlot(0, Team.Team2).reindata.reinBurnDamageID, SlotOf(EventPlayer())) != 0)
+if (EventWasHealthPack())
+{
+    cleansed = true;
+    MinWait();
+    cleansed = false;
+}
+
+rule: 'Reinhardt Fast Ultimate'
+Event.OngoingPlayer
+Team.Team2
+Player.Reinhardt
+if (IsUsingUltimate(EventPlayer()))
+{
+    CreateDummyBot(Hero.Kiriko, TeamOf(EventPlayer()), 1, PositionOf(EventPlayer()), FacingDirectionOf(EventPlayer()));
+    SetGravity(PlayersInSlot(1, Team.Team2), 0);
+    SetInvisible(PlayersInSlot(1, Team.Team2), InvisibleTo.All);
+    SetStatus(PlayersInSlot(1, Team.Team2), null, Status.Invincible, 999999);
+    SetStatus(PlayersInSlot(1, Team.Team2), null, Status.PhasedOut, 999999);
+    Wait(0.40);
+    if  (!IsUsingUltimate(EventPlayer()))
+    {
+        DestroyDummyBot(Team.Team2, 1);
+    }
+    WaitUntil(IsOnGround(EventPlayer()), 999999);
+    Wait(0.016, WaitBehavior.AbortWhenFalse);
+    SetUltimateCharge(PlayersInSlot(1, Team.Team2), 100);
+    PlayEffect(AllPlayers(Team.All), PlayEffect.DoomfistMeteorStrikeImpactEffect, Color.Team2, WorldVectorOf(Vector(0, 2.5, 0), EventPlayer(), LocalVector.RotationAndTranslation), 2);
+    PlayEffect(AllPlayers(Team.All), PlayEffect.BastionTankCannonExplosionEffect, Color.Team2, WorldVectorOf(Vector(0, 0, 0), EventPlayer(), LocalVector.RotationAndTranslation), 15);    
+    PlayEffect(AllPlayers(Team.All), PlayEffect.DvaSelfDestructExplosionSound, Color.Team2, WorldVectorOf(Vector(0, 0, 0), EventPlayer(), LocalVector.RotationAndTranslation), 20);
+    MinWait();
+    Damage(FilteredArray(FilteredArray(PlayersWithinRadius(PositionOf(EventPlayer()), 20, Team.Team1, RadiusLOS.SurfacesAndEnemyBarriers), !HasStatus(ArrayElement(), Status.KnockedDown)), AltitudeOf(ArrayElement()) <= 1.77), EventPlayer(), 50);
+    SetStatus(FilteredArray(PlayersWithinRadius(PositionOf(EventPlayer()), 20, Team.Team1, RadiusLOS.SurfacesAndEnemyBarriers), AltitudeOf(ArrayElement()) <= 1.77), EventPlayer(), Status.KnockedDown, 2.75);
+    Wait(0.25);
+    PressButton(PlayersInSlot(1, Team.Team2), Button.Ultimate);
+    Wait(0.5);
+    Teleport(PlayersInSlot(1, Team.Team2), Vector(0, 500, 0));
+    WaitUntil(!IsUsingUltimate(PlayersInSlot(1, Team.Team2)) || HeroOf(EventPlayer()) != Hero.Reinhardt, 999999);
+    DestroyDummyBot(Team.Team2, 1);
 }
