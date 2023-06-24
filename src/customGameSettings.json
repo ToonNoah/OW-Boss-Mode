@@ -1,4 +1,6 @@
 {
+  "Mode Name": "5 vs. 1 Boss Mode",
+  "Description": "Team up with other players in a 5 v 1 mode where the five players have to take down one super powered boss hero!",
     "Lobby": {
         "Team Balancing": "After A Mirror Match",
         "Swap Teams After Match": true,
