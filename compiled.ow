@@ -1,5 +1,10 @@
 settings
 {
+    main
+    {
+        Description: "Team up with other players in a 5 v 1 mode where the five players have to take down one super powered boss hero!"
+        Mode Name: "5 vs. 1 Boss Mode"
+    }
     lobby
     {
         Team Balancing: After A Mirror Match
@@ -681,6 +686,21 @@ rule("Boss Ultimate Glow")
         Wait Until(Compare(Ultimate Charge Percent(Event Player), <, 100), 999999);
         Destroy Effect(First Of(Player Variable(Event Player, bossUltimateGlow)));
         Destroy Effect(Value In Array(Player Variable(Event Player, bossUltimateGlow), 1));
+    }
+}
+
+rule("Version Number")
+{
+
+    event
+    {
+        Ongoing - Global;
+    }
+
+    // Action count: 1
+    actions
+    {
+        Create HUD Text(All Players(All Teams), Null, Custom String("v1.0"), Null, Top, 0, Null, Color(Yellow), Color(White), Visible To And String, Default Visibility);
     }
 }
 
