@@ -1,0 +1,54 @@
+import "strings.del";
+
+struct BossStats {
+    public Number damageDealt;
+    public Number damageReceived;
+    public Number healingDealt;
+    public Number healingReceived;
+    public Number health;
+    public Number jumpSpeed;
+    public Number gravity;
+    public Number moveSpeed;
+    public Number projectileSpeed;
+    public Number secondaryCooldown;
+    public Number ability1Cooldown;  
+    public Number ability2Cooldown;
+    public Number jumpAbilityCooldown;
+    public Number crouchAbilityCooldown;
+}
+
+playervar BossStats bossStats = {
+    damageDealt: 0,
+    damageReceived: 0,
+    healingDealt: 0,
+    healingReceived: 0,
+    health: 0,
+    jumpSpeed: 0,
+    gravity: 0,
+    moveSpeed: 0,
+    projectileSpeed: 0,
+    secondaryCooldown: 0,
+    ability1Cooldown: 0,
+    ability2Cooldown: 0,
+    jumpAbilityCooldown: 0,
+    crouchAbilityCooldown: 0
+};
+
+# Subroutine "Apply Boss Stats"
+void ApplyBossStats() "Apply Boss Stats" {
+    SetDamageDealt(EventPlayer(), bossStats.damageDealt);
+    SetDamageReceived(EventPlayer(), bossStats.damageReceived);
+    SetHealingDealt(EventPlayer(), bossStats.healingDealt);
+    SetHealingReceived(EventPlayer(), bossStats.healingReceived);
+    SetMaxHealth(EventPlayer(), bossStats.health);
+    SetJumpVerticalSpeed(EventPlayer(), bossStats.jumpSpeed);
+    SetGravity(EventPlayer(), bossStats.gravity);
+    SetMoveSpeed(EventPlayer(), bossStats.moveSpeed);
+    SetProjectileSpeed(EventPlayer(), bossStats.projectileSpeed);
+    SetAbilityCooldown(EventPlayer(), Button.SecondaryFire, bossStats.secondaryCooldown);
+    SetAbilityCooldown(EventPlayer(), Button.Ability1, bossStats.ability1Cooldown);
+    SetAbilityCooldown(EventPlayer(), Button.Ability2, bossStats.ability2Cooldown);
+    SetAbilityCooldown(EventPlayer(), Button.Jump, bossStats.jumpAbilityCooldown);
+    SetAbilityCooldown(EventPlayer(), Button.Crouch, bossStats.crouchAbilityCooldown);
+}
+

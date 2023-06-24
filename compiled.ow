@@ -1,0 +1,100 @@
+variables
+{
+    player:
+        0: bossStats_damageDealt
+        1: bossStats_damageReceived
+        2: bossStats_healingDealt
+        3: bossStats_healingReceived
+        4: bossStats_health
+        5: bossStats_jumpSpeed
+        6: bossStats_gravity
+        7: bossStats_moveSpeed
+        8: bossStats_projectileSpeed
+}
+
+subroutines
+{
+    0: ApplyBossStats
+}
+
+rule("Initial Player")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        All;
+        All;
+    }
+
+    // Action count: 9
+    actions
+    {
+        Set Player Variable(Event Player, bossStats_damageDealt, 0);
+        Set Player Variable(Event Player, bossStats_damageReceived, 0);
+        Set Player Variable(Event Player, bossStats_healingDealt, 0);
+        Set Player Variable(Event Player, bossStats_healingReceived, 0);
+        Set Player Variable(Event Player, bossStats_health, 0);
+        Set Player Variable(Event Player, bossStats_jumpSpeed, 0);
+        Set Player Variable(Event Player, bossStats_gravity, 0);
+        Set Player Variable(Event Player, bossStats_moveSpeed, 0);
+        Set Player Variable(Event Player, bossStats_projectileSpeed, 0);
+    }
+}
+
+rule("Apply Boss Stats")
+{
+
+    event
+    {
+        Subroutine;
+        ApplyBossStats;
+    }
+
+    // Action count: 9
+    actions
+    {
+        Set Damage Dealt(Event Player, Player Variable(Event Player, bossStats_damageDealt));
+        Set Damage Received(Event Player, Player Variable(Event Player, bossStats_damageReceived));
+        Set Healing Dealt(Event Player, Player Variable(Event Player, bossStats_healingDealt));
+        Set Healing Received(Event Player, Player Variable(Event Player, bossStats_healingReceived));
+        Set Max Health(Event Player, Player Variable(Event Player, bossStats_health));
+        Set Jump Vertical Speed(Event Player, Player Variable(Event Player, bossStats_jumpSpeed));
+        Set Gravity(Event Player, Player Variable(Event Player, bossStats_gravity));
+        Set Move Speed(Event Player, Player Variable(Event Player, bossStats_moveSpeed));
+        Set Projectile Speed(Event Player, Player Variable(Event Player, bossStats_projectileSpeed));
+    }
+}
+
+rule("Reinhardt Boss Settings")
+{
+
+    event
+    {
+        Ongoing - Each Player;
+        Team2;
+        Slot0;
+    }
+
+    conditions
+    {
+        Hero Of(Event Player) == Hero(Reinhardt);
+        Has Spawned(Event Player) == True;
+    }
+
+    // Action count: 10
+    actions
+    {
+        Set Player Variable(Event Player, bossStats_damageDealt, Workshop Setting Real(Custom String("Reinhardt Boss"), Custom String("Reinhardt Damage Dealt"), 170, 10, 500, 0));
+        Set Player Variable(Event Player, bossStats_damageReceived, Workshop Setting Real(Custom String("Reinhardt Boss"), Custom String("Reinhardt Damage Received"), 100, 10, 500, 1));
+        Set Player Variable(Event Player, bossStats_healingDealt, 100);
+        Set Player Variable(Event Player, bossStats_healingReceived, Workshop Setting Real(Custom String("Reinhardt Boss"), Custom String("Reinhardt Healing Received"), 170, 10, 500, 3));
+        Set Player Variable(Event Player, bossStats_health, Workshop Setting Real(Custom String("Reinhardt Boss"), Custom String("Reinhardt Health"), 181.819, 10, 500, 4));
+        Set Player Variable(Event Player, bossStats_jumpSpeed, Workshop Setting Real(Custom String("Reinhardt Boss"), Custom String("Reinhardt Jump Speed"), 100, 10, 500, 5));
+        Set Player Variable(Event Player, bossStats_gravity, Workshop Setting Real(Custom String("Reinhardt Boss"), Custom String("Reinhardt Gravity"), 100, 10, 500, 6));
+        Set Player Variable(Event Player, bossStats_moveSpeed, Workshop Setting Real(Custom String("Reinhardt Boss"), Custom String("Reinhardt Movement Speed"), 150, 10, 500, 7));
+        Set Player Variable(Event Player, bossStats_projectileSpeed, Workshop Setting Real(Custom String("Reinhardt Boss"), Custom String("Reinhardt Projectile Speed"), 100, 10, 500, 8));
+        Call Subroutine(ApplyBossStats);
+    }
+}
+
